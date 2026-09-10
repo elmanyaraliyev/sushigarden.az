@@ -319,6 +319,22 @@ $csrf = sg_csrf_token();
   </div>
 </div>
 
+<div id="product-modal" class="product-modal" aria-hidden="true">
+  <div class="product-modal-backdrop" id="product-modal-backdrop"></div>
+  <div class="product-modal-card">
+    <button class="product-modal-close" id="product-modal-close" aria-label="Bağla">×</button>
+    <div class="product-modal-media" id="product-modal-media"></div>
+    <div class="product-modal-body">
+      <h3 id="product-modal-name"></h3>
+      <p id="product-modal-desc"></p>
+      <div class="product-modal-foot">
+        <span class="price" id="product-modal-price"></span>
+        <button class="btn btn-primary" id="product-modal-add" data-i18n="add_to_cart">Səbətə əlavə et</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script src="js/site.js?v=<?php echo (int)@filemtime(__DIR__ . '/js/site.js'); ?>" defer></script>
 </body>
 </html>

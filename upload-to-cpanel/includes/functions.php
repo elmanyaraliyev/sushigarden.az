@@ -132,28 +132,57 @@ function sg_save_cropped_image($dataUrl) {
     $binary = base64_decode(substr($dataUrl, $comma + 1));
     if ($binary === false || strlen($binary) < 10) return null;
 
-    $img = @imagecreatefromstring($binary);
-    if (!$img) return null;
-
-    $maxW = 900;
-    $w = imagesx($img);
-    $h = imagesy($img);
-    if ($w > $maxW) {
-        $newH = (int)round($h * ($maxW / $w));
-        $resized = imagecreatetruecolor($maxW, $newH);
-        imagecopyresampled($resized, $img, 0, 0, 0, 0, $maxW, $newH, $w, $h);
-        imagedestroy($img);
-        $img = $resized;
+    if (!sg_ensure_writable_dir(SG_UPLOADS_DIR)) {
+        error_log('Sushi Garden: uploads/products qovluğu yazıla bilmir: ' . SG_UPLOADS_DIR);
+        return null;
     }
 
-    if (!is_dir(SG_UPLOADS_DIR)) {
-        @mkdir(SG_UPLOADS_DIR, 0755, true);
-    }
     $filename = 'p' . time() . '_' . substr(bin2hex(random_bytes(4)), 0, 8) . '.jpg';
     $path = SG_UPLOADS_DIR . '/' . $filename;
-    imagejpeg($img, $path, 86);
-    imagedestroy($img);
+
+    $written = false;
+    $img = @imagecreatefromstring($binary);
+    if ($img) {
+        $maxW = 900;
+        $w = imagesx($img);
+        $h = imagesy($img);
+        if ($w > $maxW) {
+            $newH = (int)round($h * ($maxW / $w));
+            $resized = imagecreatetruecolor($maxW, $newH);
+            imagecopyresampled($resized, $img, 0, 0, 0, 0, $maxW, $newH, $w, $h);
+            imagedestroy($img);
+            $img = $resized;
+        }
+        $written = @imagejpeg($img, $path, 86);
+        imagedestroy($img);
+    }
+
+    if (!$written) {
+        // GD yazısı uğursuz oldu — xam faylı birbaşa diskə yazmağa cəhd et (son ehtiyat variant)
+        $written = @file_put_contents($path, $binary) !== false;
+    }
+
+    if (!$written || !is_file($path)) {
+        error_log('Sushi Garden: şəkil diskə yazıla bilmədi: ' . $path);
+        return null;
+    }
+
+    @chmod($path, 0644);
     return $filename;
+}
+
+/**
+ * Qovluğun mövcud və yazılabilən olmasını təmin edir (yoxdursa yaradır,
+ * icazələri düzəltməyə çalışır). Uğurlu olarsa true qaytarır.
+ */
+function sg_ensure_writable_dir($dir) {
+    if (!is_dir($dir)) {
+        @mkdir($dir, 0755, true);
+    }
+    if (is_dir($dir) && !is_writable($dir)) {
+        @chmod($dir, 0755);
+    }
+    return is_dir($dir) && is_writable($dir);
 }
 
 /**
@@ -165,26 +194,44 @@ function sg_save_branding_upload($fileArray, $maxW = 1200) {
     if (empty($fileArray) || !isset($fileArray['tmp_name']) || $fileArray['error'] !== UPLOAD_ERR_OK) {
         return null;
     }
-    $img = @imagecreatefromstring(file_get_contents($fileArray['tmp_name']));
-    if (!$img) return null;
-
-    $w = imagesx($img);
-    $h = imagesy($img);
-    if ($w > $maxW) {
-        $newH = (int)round($h * ($maxW / $w));
-        $resized = imagecreatetruecolor($maxW, $newH);
-        imagecopyresampled($resized, $img, 0, 0, 0, 0, $maxW, $newH, $w, $h);
-        imagedestroy($img);
-        $img = $resized;
-    }
+    $binary = @file_get_contents($fileArray['tmp_name']);
+    if ($binary === false) return null;
 
     $dir = SG_ROOT . '/uploads/branding';
-    if (!is_dir($dir)) {
-        @mkdir($dir, 0755, true);
+    if (!sg_ensure_writable_dir($dir)) {
+        error_log('Sushi Garden: uploads/branding qovluğu yazıla bilmir: ' . $dir);
+        return null;
     }
+
     $filename = 'b' . time() . '_' . substr(bin2hex(random_bytes(4)), 0, 8) . '.jpg';
-    imagejpeg($img, $dir . '/' . $filename, 88);
-    imagedestroy($img);
+    $path = $dir . '/' . $filename;
+
+    $written = false;
+    $img = @imagecreatefromstring($binary);
+    if ($img) {
+        $w = imagesx($img);
+        $h = imagesy($img);
+        if ($w > $maxW) {
+            $newH = (int)round($h * ($maxW / $w));
+            $resized = imagecreatetruecolor($maxW, $newH);
+            imagecopyresampled($resized, $img, 0, 0, 0, 0, $maxW, $newH, $w, $h);
+            imagedestroy($img);
+            $img = $resized;
+        }
+        $written = @imagejpeg($img, $path, 88);
+        imagedestroy($img);
+    }
+
+    if (!$written) {
+        $written = @file_put_contents($path, $binary) !== false;
+    }
+
+    if (!$written || !is_file($path)) {
+        error_log('Sushi Garden: brendinq şəkli diskə yazıla bilmədi: ' . $path);
+        return null;
+    }
+
+    @chmod($path, 0644);
     return 'uploads/branding/' . $filename;
 }
 

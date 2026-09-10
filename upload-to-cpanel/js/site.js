@@ -200,12 +200,6 @@ document.addEventListener('DOMContentLoaded', function () {
       d.addEventListener('click', function () { goTo(di); startAuto(); });
     });
 
-    var shell = track.closest('.carousel-shell');
-    if (shell) {
-      shell.addEventListener('mouseenter', stopAuto);
-      shell.addEventListener('mouseleave', startAuto);
-    }
-
     // barmaqla sürüşdürmə (touch swipe)
     var touchStartX = null;
     track.addEventListener('touchstart', function (e) { touchStartX = e.touches[0].clientX; stopAuto(); }, { passive: true });
@@ -576,6 +570,70 @@ document.addEventListener('DOMContentLoaded', function () {
   pill.addEventListener('click', openDrawer);
   document.getElementById('drawer-close').addEventListener('click', closeDrawer);
   overlay.addEventListener('click', closeDrawer);
+
+  // Məhsul üzərinə toxunanda ətraflı məlumat pəncərəsi (+ düyməsi istisna)
+  (function initProductModal() {
+    var modal = document.getElementById('product-modal');
+    if (!modal) return;
+    var backdrop = document.getElementById('product-modal-backdrop');
+    var closeBtn = document.getElementById('product-modal-close');
+    var mediaEl = document.getElementById('product-modal-media');
+    var nameEl = document.getElementById('product-modal-name');
+    var descEl = document.getElementById('product-modal-desc');
+    var priceEl = document.getElementById('product-modal-price');
+    var addBtn = document.getElementById('product-modal-add');
+    var triggerBtn = null;
+
+    function openFor(item) {
+      var nameSrc = item.querySelector('.name');
+      var descSrc = item.querySelector('.desc');
+      var priceSrc = item.querySelector('.price');
+      var imgSrc = item.querySelector('img');
+      var phSrc = item.querySelector('.ph');
+
+      nameEl.textContent = nameSrc ? nameSrc.textContent.trim() : '';
+      var descText = descSrc ? descSrc.textContent.trim() : '';
+      descEl.textContent = descText;
+      descEl.style.display = descText ? 'block' : 'none';
+      priceEl.textContent = priceSrc ? priceSrc.textContent.trim() : '';
+
+      mediaEl.innerHTML = '';
+      if (imgSrc) {
+        var img = document.createElement('img');
+        img.src = imgSrc.getAttribute('src');
+        img.alt = nameEl.textContent;
+        mediaEl.appendChild(img);
+      } else {
+        var span = document.createElement('span');
+        span.className = 'ph';
+        span.textContent = phSrc ? phSrc.textContent : '🍣';
+        mediaEl.appendChild(span);
+      }
+
+      triggerBtn = item.querySelector('.add, .js-add-to-cart');
+      modal.classList.add('open');
+      modal.setAttribute('aria-hidden', 'false');
+    }
+    function closeModal() {
+      modal.classList.remove('open');
+      modal.setAttribute('aria-hidden', 'true');
+    }
+
+    document.querySelectorAll('.menu-item, .carousel-slide').forEach(function (item) {
+      item.addEventListener('click', function (e) {
+        if (e.target.closest('.add, .js-add-to-cart, .qty-controls, button[data-act]')) return;
+        openFor(item);
+      });
+    });
+
+    closeBtn.addEventListener('click', closeModal);
+    backdrop.addEventListener('click', closeModal);
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape') closeModal(); });
+    addBtn.addEventListener('click', function () {
+      if (triggerBtn) triggerBtn.click();
+      closeModal();
+    });
+  })();
 
   render();
 });
