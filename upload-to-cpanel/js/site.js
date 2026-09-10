@@ -188,7 +188,7 @@ document.addEventListener('DOMContentLoaded', function () {
     function prev() { goTo(index - 1); }
     function startAuto() {
       stopAuto();
-      if (slides.length > 1) autoTimer = setInterval(next, 5500);
+      if (slides.length > 1) autoTimer = setInterval(next, 3000);
     }
     function stopAuto() {
       if (autoTimer) clearInterval(autoTimer);

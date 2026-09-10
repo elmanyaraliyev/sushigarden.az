@@ -87,38 +87,6 @@ $csrf = sg_csrf_token();
 
 <main id="top">
 
-  <section class="hero">
-    <div class="wrap hero-grid">
-      <div>
-        <p class="eyebrow" data-i18n="hero_eyebrow">Bakı · Yapon mətbəxi</p>
-        <h1 data-i18n="hero_title">Bakının qəlbində<br><em>təzə suşi</em> bağı</h1>
-        <p class="lede"><?php echo h($restaurantName); ?>-də hər rulon gündəlik gətirilən təzə balıqdan, sakit bağ ovqatında, əl işi diqqətlə hazırlanır.</p>
-        <div class="cta-row">
-          <a href="#menyu" class="btn btn-primary" data-i18n="hero_cta_menu">Menyuya bax</a>
-          <a href="https://wa.me/<?php echo h($phoneWa); ?>?text=Salam%2C%20<?php echo urlencode($restaurantName); ?>-d%C9%99n%20sifari%C5%9F%20vermək%20ist%C9%99yir%C9%99m" target="_blank" rel="noopener" class="btn btn-ghost" data-i18n="hero_cta_wa">WhatsApp ilə sifariş</a>
-        </div>
-        <div class="hero-facts">
-          <span class="fact"><strong><?php echo $totalItems; ?>+</strong> <span data-i18n="hero_fact_items">menyu seçimi</span></span>
-          <span class="fact"><strong>11–23</strong> <span data-i18n="hero_fact_hours">hər gün açıq</span></span>
-          <span class="fact"><strong>WhatsApp</strong> <span data-i18n="hero_fact_wa">ilə sürətli sifariş</span></span>
-        </div>
-      </div>
-      <div class="hero-art">
-        <div class="frame">
-          <?php if ($heroImage): ?>
-            <img src="<?php echo h($heroImage); ?>" alt="<?php echo h($restaurantName); ?>" width="744" height="651" fetchpriority="high">
-          <?php elseif ($logoFullCustom): ?>
-            <img src="<?php echo h($logoFullCustom); ?>" alt="<?php echo h($restaurantName); ?> — loqo" width="744" height="651" fetchpriority="high">
-          <?php else: ?>
-            <?php sg_picture('assets/logo-full', h($restaurantName) . ' — loqo', 'width="744" height="651" fetchpriority="high"'); ?>
-          <?php endif; ?>
-        </div>
-        <div class="tag" data-i18n="hero_tag">Əl işi · Gündəlik təzə</div>
-      </div>
-    </div>
-    <div class="wave-strip" aria-hidden="true"></div>
-  </section>
-
   <?php if ($featured): ?>
   <section class="promo-carousel">
     <div class="wrap">
