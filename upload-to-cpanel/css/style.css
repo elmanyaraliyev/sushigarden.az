@@ -298,8 +298,8 @@ header.scrolled .nav{padding:11px 28px;}
 .carousel-viewport{overflow:hidden; position:relative; z-index:1;}
 .carousel-track{display:flex; transition:transform .5s cubic-bezier(.4,0,.2,1);}
 .carousel-slide{
-  flex:0 0 100%; display:grid; grid-template-columns:1.1fr 1fr; align-items:center;
-  gap:2.6rem; padding:3.6rem 4rem; min-height:460px;
+  flex:0 0 100%; display:grid; grid-template-columns:1fr 1.15fr; align-items:center;
+  gap:2.6rem; padding:3.4rem 3.2rem 3.4rem 4rem; min-height:500px;
 }
 .slide-info .badge{
   display:inline-block; background:var(--accent); color:var(--ink); font-size:.72rem;
@@ -312,9 +312,9 @@ header.scrolled .nav{padding:11px 28px;}
 .slide-foot .price{font-size:1.9rem; font-weight:800; font-family:'Playfair Display',serif; color:var(--gold);}
 .slide-media{display:flex; align-items:center; justify-content:center;}
 .slide-media img{
-  width:100%; max-width:440px; aspect-ratio:4/3; object-fit:cover;
-  -webkit-mask-image: radial-gradient(ellipse 78% 78% at 50% 50%, #000 55%, transparent 100%);
-  mask-image: radial-gradient(ellipse 78% 78% at 50% 50%, #000 55%, transparent 100%);
+  width:100%; max-width:600px; aspect-ratio:4/3; object-fit:cover;
+  -webkit-mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, #000 82%, transparent 100%);
+  mask-image: radial-gradient(ellipse 100% 100% at 50% 50%, #000 82%, transparent 100%);
 }
 .slide-media .ph{font-size:7rem; opacity:.55;}
 
