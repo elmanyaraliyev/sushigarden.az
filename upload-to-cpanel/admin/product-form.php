@@ -27,7 +27,10 @@ $values = [
 ];
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    if (!sg_csrf_check($_POST['csrf'] ?? '')) {
+    if (empty($_POST) && (int)($_SERVER['CONTENT_LENGTH'] ?? 0) > 0) {
+        // $_POST tamamilə boşdur, amma məlumat göndərilib — server qəbul limitini aşıb, PHP hər şeyi ataraq susub.
+        $errors[] = 'Şəkil çox böyükdür, server onu qəbul etmədi. Daha kiçik şəkil seçib yenidən cəhd edin.';
+    } elseif (!sg_csrf_check($_POST['csrf'] ?? '')) {
         $errors[] = 'Səhifə köhnəlib, formu yenidən doldurun.';
     } else {
         $values['category_id'] = (int)($_POST['category_id'] ?? 0);
@@ -120,6 +123,9 @@ require __DIR__ . '/includes/header.php';
           <?php endif; ?>
           <div>
             <input type="file" id="image-input" accept="image/*">
+            <div style="margin-top:.4rem; font-size:.76rem; opacity:.55; max-width:280px; line-height:1.4;">
+              Tövsiyə: kvadrat şəkil, minimum 700×700px, JPG və ya PNG formatında, maksimum 20 MB (avtomatik kiçildilir).
+            </div>
             <?php if (!empty($product['image'])): ?>
               <div style="margin-top:.5rem;">
                 <label class="checkbox-row" style="display:inline-flex;">
@@ -153,36 +159,45 @@ require __DIR__ . '/includes/header.php';
       </div>
     </div>
 
-    <div class="field">
-      <label>Məhsul adı (AZ)</label>
-      <input type="text" name="name" value="<?php echo h($values['name']); ?>" required>
-    </div>
-
-    <div class="field">
-      <label>Tərkib / təsvir (AZ)</label>
-      <textarea name="description" placeholder="Məs. Krab çubuğu, avokado, xiyar, kunjut"><?php echo h($values['description']); ?></textarea>
-    </div>
-
-    <div class="form-grid">
+    <div class="lang-block lang-block-az">
+      <div class="lang-block-title">🇦🇿 Azərbaycanca <span class="req">(məcburi)</span></div>
       <div class="field">
-        <label>Ad (RU) — istəyə bağlı</label>
+        <label>Məhsul adı</label>
+        <input type="text" name="name" value="<?php echo h($values['name']); ?>" required>
+      </div>
+      <div class="field">
+        <label>Tərkib / təsvir</label>
+        <textarea name="description" placeholder="Məs. Krab çubuğu, avokado, xiyar, kunjut"><?php echo h($values['description']); ?></textarea>
+      </div>
+    </div>
+
+    <div class="lang-block">
+      <div class="lang-block-title">🇷🇺 Русский <span class="opt">(istəyə bağlı)</span></div>
+      <div class="field">
+        <label>Название</label>
         <input type="text" name="name_ru" value="<?php echo h($values['name_ru']); ?>">
       </div>
       <div class="field">
-        <label>Ad (EN) — istəyə bağlı</label>
-        <input type="text" name="name_en" value="<?php echo h($values['name_en']); ?>">
-      </div>
-    </div>
-    <div class="form-grid">
-      <div class="field">
-        <label>Təsvir (RU) — istəyə bağlı</label>
+        <label>Состав / описание</label>
         <textarea name="description_ru"><?php echo h($values['description_ru']); ?></textarea>
       </div>
+    </div>
+
+    <div class="lang-block">
+      <div class="lang-block-title">🇬🇧 English <span class="opt">(optional)</span></div>
       <div class="field">
-        <label>Təsvir (EN) — istəyə bağlı</label>
+        <label>Product name</label>
+        <input type="text" name="name_en" value="<?php echo h($values['name_en']); ?>">
+      </div>
+      <div class="field">
+        <label>Ingredients / description</label>
         <textarea name="description_en"><?php echo h($values['description_en']); ?></textarea>
       </div>
     </div>
+
+    <p style="color:var(--text-soft); font-size:.82rem; margin:-.4rem 0 1.2rem;">
+      RU/EN sahələrini boş buraxsanız, sayt həmin dillərdə də Azərbaycanca adı/təsviri göstərəcək.
+    </p>
 
     <div class="field">
       <label class="checkbox-row">
@@ -229,15 +244,37 @@ require __DIR__ . '/includes/header.php';
     if (removeCheckbox) removeCheckbox.checked = false;
   }
 
+  // Kropper (CDN) yüklənməsə belə, şəkli HƏMİŞƏ canvas ilə kiçildib göndəririk —
+  // əks halda telefon şəklinin əsl ölçüsü (8-12 MB) serverin qəbul limitini aşıb
+  // BÜTÜN FORMU sıradan çıxarır (heç bir sahə saxlanılmır, qəribə "köhnəlib" xətası çıxır).
+  function resizeToDataUrl(srcDataUrl, maxDim, cb){
+    var img = new Image();
+    img.onload = function(){
+      var w = img.naturalWidth, h = img.naturalHeight;
+      if (w > maxDim || h > maxDim) {
+        if (w > h) { h = Math.round(h * maxDim / w); w = maxDim; }
+        else { w = Math.round(w * maxDim / h); h = maxDim; }
+      }
+      var canvas = document.createElement('canvas');
+      canvas.width = w; canvas.height = h;
+      canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+      cb(canvas.toDataURL('image/jpeg', 0.85));
+    };
+    img.src = srcDataUrl;
+  }
+
   imageInput.addEventListener('change', function(e){
     var file = e.target.files[0];
     if (!file) return;
+    if (file.size > 20 * 1024 * 1024) {
+      alert('Şəkil çox böyükdür (maks. 20 MB). Daha kiçik şəkil seçin.');
+      imageInput.value = '';
+      return;
+    }
     var reader = new FileReader();
     reader.onload = function(ev){
-      // Kropper kitabxanası (CDN) yüklənməyibsə — internet problemi, ad-blocker və s. —
-      // şəkli kəsmədən birbaşa yükləyirik ki, admin panel yenə də işləsin.
       if (window.__cropperFailed || typeof Cropper === 'undefined') {
-        setPreview(ev.target.result);
+        resizeToDataUrl(ev.target.result, 900, setPreview);
         return;
       }
       cropTarget.src = ev.target.result;

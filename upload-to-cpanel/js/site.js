@@ -141,27 +141,33 @@ document.addEventListener('DOMContentLoaded', function () {
     revealEls.forEach(function (el) { el.classList.add('in-view'); });
   }
 
-  // menu tabs — bir kateqoriya seçiləndə YALNIZ o kateqoriya göstərilir (filtr), digərləri gizlənir
+  // menu tabs — hər zaman YALNIZ seçilmiş bir kateqoriya göstərilir, digərləri gizlənir ("Hamısı" yoxdur)
   var tabBtns = document.querySelectorAll('#menu-tabs button');
   var menuCols = document.getElementById('menu-cols');
   if (tabBtns.length) {
     var catSections = document.querySelectorAll('.menu-cat');
-    tabBtns.forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        var cat = btn.getAttribute('data-cat');
-        tabBtns.forEach(function (b) { b.classList.toggle('active', b === btn); });
-        catSections.forEach(function (sec) {
-          var show = (cat === 'all') || (sec.getAttribute('data-cat-id') === cat);
-          sec.style.display = show ? '' : 'none';
-        });
-        if (menuCols) menuCols.classList.toggle('single', cat !== 'all');
+    function applyMenuFilter(cat, scroll) {
+      catSections.forEach(function (sec) {
+        sec.style.display = (sec.getAttribute('data-cat-id') === cat) ? '' : 'none';
+      });
+      if (menuCols) menuCols.classList.add('single');
+      if (scroll) {
         var menuSection = document.getElementById('menyu');
         if (menuSection) {
           var top = menuSection.getBoundingClientRect().top + window.scrollY - 90;
           window.scrollTo({ top: top, behavior: 'smooth' });
         }
+      }
+    }
+    tabBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () {
+        tabBtns.forEach(function (b) { b.classList.toggle('active', b === btn); });
+        applyMenuFilter(btn.getAttribute('data-cat'), true);
       });
     });
+    // ilk yüklənmədə aktiv (ilk) kateqoriyanı göstər
+    var initialBtn = document.querySelector('#menu-tabs button.active') || tabBtns[0];
+    applyMenuFilter(initialBtn.getAttribute('data-cat'), false);
   }
 
   /* ------------------------------------------------------------------

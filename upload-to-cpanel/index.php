@@ -139,9 +139,8 @@ $csrf = sg_csrf_token();
       <?php if (count($catsWithItems) > 1): ?>
       <div class="menu-tabs-wrap">
         <nav class="menu-tabs" id="menu-tabs">
-          <button type="button" class="active" data-cat="all" data-i18n="menu_tab_all">Hamısı</button>
-          <?php foreach ($catsWithItems as $cat): ?>
-            <button type="button" data-cat="<?php echo (int)$cat['id']; ?>" data-i18n-ru="<?php echo h($cat['name_ru'] ?? ''); ?>" data-i18n-en="<?php echo h($cat['name_en'] ?? ''); ?>"><?php echo h($cat['name']); ?></button>
+          <?php foreach ($catsWithItems as $ci => $cat): ?>
+            <button type="button" class="<?php echo $ci === 0 ? 'active' : ''; ?>" data-cat="<?php echo (int)$cat['id']; ?>" data-i18n-ru="<?php echo h($cat['name_ru'] ?? ''); ?>" data-i18n-en="<?php echo h($cat['name_en'] ?? ''); ?>"><?php echo h($cat['name']); ?></button>
           <?php endforeach; ?>
         </nav>
       </div>

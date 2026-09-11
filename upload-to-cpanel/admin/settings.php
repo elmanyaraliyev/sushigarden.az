@@ -78,4 +78,38 @@ require __DIR__ . '/includes/header.php';
   </form>
 </div>
 
+<div class="panel" style="max-width:520px;">
+  <div class="panel-head"><h2>Yeni sifariş bildiriş səsi</h2></div>
+  <p style="color:var(--text-soft); font-size:.88rem; margin-top:-.6rem; margin-bottom:1rem;">
+    Yeni sifariş daxil olanda admin paneldə (hansı səhifədə olmağınızdan asılı olmayaraq) bu səs çalınacaq.
+    Seçim bu brauzerdə yadda saxlanılır.
+  </p>
+  <div class="sound-options" id="sound-options">
+    <label><input type="radio" name="sg_sound" value="chime"> Zəng (üçlü)</label>
+    <label><input type="radio" name="sg_sound" value="beep1"> Bip (tək)</label>
+    <label><input type="radio" name="sg_sound" value="beep2"> Bip (ikili)</label>
+    <label><input type="radio" name="sg_sound" value="none"> Səssiz</label>
+  </div>
+  <button type="button" class="btn btn-ghost btn-sm" id="sound-test" style="margin-top:1rem;">🔊 Sına</button>
+</div>
+
+<script>
+(function(){
+  var KEY = 'sg_admin_sound';
+  var radios = document.querySelectorAll('#sound-options input[type=radio]');
+  var current = 'chime';
+  try { current = localStorage.getItem(KEY) || 'chime'; } catch (e) {}
+  radios.forEach(function(r){ r.checked = (r.value === current); });
+  radios.forEach(function(r){
+    r.addEventListener('change', function(){
+      try { localStorage.setItem(KEY, r.value); } catch (e) {}
+    });
+  });
+  document.getElementById('sound-test').addEventListener('click', function(){
+    var sel = document.querySelector('#sound-options input[type=radio]:checked');
+    if (sel && window.sgPlayAdminSound) window.sgPlayAdminSound(sel.value);
+  });
+})();
+</script>
+
 <?php require __DIR__ . '/includes/footer.php'; ?>
