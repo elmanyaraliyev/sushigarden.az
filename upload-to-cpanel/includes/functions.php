@@ -372,6 +372,27 @@ function sg_order_status_label($status) {
 }
 
 /**
+ * Telefon nömrəsinin həqiqi Azərbaycan mobil nömrəsi formatına uyğun olub-olmadığını
+ * yoxlayır (yalnız "boş deyil" yox — "123456789" kimi təsadüfi rəqəmlər keçməsin deyə).
+ * Qəbul edilən formatlar: 0501234567, 501234567, +994501234567, 994501234567
+ * (aralarında boşluq/tire ola bilər). Operator kodu 10/50/51/55/60/70/77/99 olmalıdır.
+ */
+function sg_valid_az_phone($phone) {
+    $digits = preg_replace('/\D+/', '', (string)$phone);
+    if (strpos($digits, '994') === 0 && strlen($digits) === 12) {
+        $local = substr($digits, 3);
+    } elseif (strpos($digits, '0') === 0 && strlen($digits) === 10) {
+        $local = substr($digits, 1);
+    } elseif (strlen($digits) === 9) {
+        $local = $digits;
+    } else {
+        return false;
+    }
+    $validPrefixes = ['10', '50', '51', '55', '60', '70', '77', '99'];
+    return strlen($local) === 9 && in_array(substr($local, 0, 2), $validPrefixes, true);
+}
+
+/**
  * Sifarişi yaradır — qiymətləri müştəri tərəfindən göndərilən dəyərlərə
  * yox, bazadakı REAL qiymətlərə əsasən özü hesablayır (manipulyasiyanın
  * qarşısını almaq üçün). $rawItems: [{id, qty}, ...]
@@ -405,26 +426,37 @@ function sg_create_order($data, $rawItems) {
     $subtotal = round($subtotal, 2);
     $total = round($subtotal + $tip, 2);
 
-    $serviceType = in_array($data['service_type'] ?? '', sg_service_types(), true) ? $data['service_type'] : 'delivery';
+    $serviceType = in_array($data['service_type'] ?? '', ['delivery', 'takeaway'], true) ? $data['service_type'] : 'delivery';
     $name = trim((string)($data['name'] ?? ''));
     $phone = trim((string)($data['phone'] ?? ''));
     $address = trim((string)($data['address'] ?? ''));
+    $notes = trim((string)($data['notes'] ?? ''));
+    $partySize = isset($data['party_size']) && $data['party_size'] !== '' ? max(1, min(100, (int)$data['party_size'])) : null;
 
     $errors = [];
     if ($name === '') $errors[] = 'Adınızı daxil edin.';
     if ($phone === '') $errors[] = 'Telefon nömrənizi daxil edin.';
+    elseif (!sg_valid_az_phone($phone)) $errors[] = 'Düzgün mobil nömrə daxil edin (məs. 050 123 45 67).';
     if ($serviceType === 'delivery' && $address === '') $errors[] = 'Çatdırılma ünvanını daxil edin.';
     if ($errors) {
         return ['ok' => false, 'errors' => $errors];
     }
 
+    // Nə vaxt hazır olsun: "tez bir zamanda" (minimum 25 dəqiqə) və ya 2/3/5 saat sonraya sifariş
+    $timeChoice = $data['requested_time'] ?? 'asap';
+    $minutesMap = ['asap' => 25, '2h' => 120, '3h' => 180, '5h' => 300];
+    $minutes = $minutesMap[$timeChoice] ?? 25;
+    $requestedTime = date('Y-m-d H:i:s', time() + $minutes * 60);
+
+    $trackToken = bin2hex(random_bytes(12));
+
     $pdo->beginTransaction();
     try {
         $stmt = $pdo->prepare('
-            INSERT INTO orders (customer_name, customer_phone, service_type, address, subtotal, tip, total, status)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO orders (customer_name, customer_phone, service_type, address, subtotal, tip, total, status, notes, party_size, requested_time, track_token)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ');
-        $stmt->execute([$name, $phone, $serviceType, $address, $subtotal, $tip, $total, 'pending']);
+        $stmt->execute([$name, $phone, $serviceType, $address, $subtotal, $tip, $total, 'pending', $notes, $partySize, $requestedTime, $trackToken]);
         $orderId = (int)$pdo->lastInsertId();
 
         $itemStmt = $pdo->prepare('
@@ -440,7 +472,7 @@ function sg_create_order($data, $rawItems) {
         return ['ok' => false, 'errors' => ['Sifariş yadda saxlanılmadı, yenidən cəhd edin.']];
     }
 
-    return ['ok' => true, 'order_id' => $orderId, 'order_number' => '#' . $orderId, 'total' => $total];
+    return ['ok' => true, 'order_id' => $orderId, 'order_number' => '#' . $orderId, 'total' => $total, 'track_token' => $trackToken];
 }
 
 function sg_get_orders($status = null) {

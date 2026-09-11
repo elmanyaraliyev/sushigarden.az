@@ -38,6 +38,14 @@
   }
   window.sgPlayAdminSound = function(name){
     if (name === 'none') return;
+    if (name === 'bundled') {
+      try {
+        var bundled = new Audio('../assets/sounds/order-alert-admin.mp3');
+        bundled.volume = 1;
+        bundled.play().catch(function(){});
+        return;
+      } catch (e) {}
+    }
     if (name === 'custom') {
       try {
         var data = localStorage.getItem('sg_admin_custom_sound');
@@ -66,8 +74,10 @@
   var alertSub = document.getElementById('sg-order-alert-sub');
   var alertBtn = document.getElementById('sg-order-alert-btn');
 
-  var LAST_ID_KEY = 'sg_admin_last_order_id';
-  var UNSEEN_KEY = 'sg_admin_unseen_orders';
+  // "Görülmüş" (admin tərəfindən açılmış/həll edilmiş) sifariş ID-lərini saxlayırıq.
+  // Bildiriş nə qədər ki bir sifariş bu siyahıda deyil VƏ hələ "pending" statusundadır,
+  // hər tick-də (səhifə yenilənsə, başqa bölümə keçilsə belə) təkrar-təkrar davam edir.
+  var ACK_KEY = 'sg_admin_ack_orders';
   var SOUND_KEY = 'sg_admin_sound';
   var REPEAT_MS = 9000;
 
@@ -77,17 +87,15 @@
   function getSound(){
     try { return localStorage.getItem(SOUND_KEY) || 'chime'; } catch (e) { return 'chime'; }
   }
-  function getLastId(){
-    try { return parseInt(localStorage.getItem(LAST_ID_KEY) || '0', 10); } catch (e) { return 0; }
+  function getAck(){
+    try { return JSON.parse(localStorage.getItem(ACK_KEY) || '[]'); } catch (e) { return []; }
   }
-  function setLastId(id){
-    try { localStorage.setItem(LAST_ID_KEY, String(id)); } catch (e) {}
+  function setAck(arr){
+    try { localStorage.setItem(ACK_KEY, JSON.stringify(arr)); } catch (e) {}
   }
-  function getUnseen(){
-    try { return JSON.parse(localStorage.getItem(UNSEEN_KEY) || '[]'); } catch (e) { return []; }
-  }
-  function setUnseen(arr){
-    try { localStorage.setItem(UNSEEN_KEY, JSON.stringify(arr)); } catch (e) {}
+  function ackOrder(id){
+    var ack = getAck();
+    if (ack.indexOf(id) === -1) { ack.push(id); setAck(ack); }
   }
 
   // Hazırda order-view.php-də hansı sifarişə baxıldığını oxuyur — həmin sifariş
@@ -158,9 +166,10 @@
   }
 
   alertBtn.addEventListener('click', function(){
-    // sifarişə keçəndə həmin ID-ni dərhal "görülmüş" say
-    var unseen = getUnseen();
-    if (unseen.length === 1) { setUnseen([]); hideAlert(); }
+    // sifarişə keçəndə həmin ID-ni dərhal "görülmüş" say ki, geri qayıtsa bildiriş təkrarlanmasın
+    var m = alertBtn.href.match(/id=(\d+)/);
+    if (m) ackOrder(parseInt(m[1], 10));
+    hideAlert();
   });
 
   document.addEventListener('visibilitychange', function(){
@@ -172,23 +181,20 @@
       .then(function(r){ return r.json(); })
       .then(function(data){
         var pendingIds = data.pending_ids || [];
-        var last = getLastId();
-        var unseen = getUnseen();
+        var ack = getAck();
 
-        // yeni gələn (indiyədək görülməmiş) sifarişləri əlavə et
-        pendingIds.forEach(function(id){
-          if (id > last && unseen.indexOf(id) === -1) unseen.push(id);
-        });
-
-        // hazırda açıq olan sifarişi görülmüş say
+        // hazırda order-view.php-də açıq olan sifarişi görülmüş say
         var viewingId = getViewingOrderId();
-        if (viewingId !== null) unseen = unseen.filter(function(id){ return id !== viewingId; });
+        if (viewingId !== null && ack.indexOf(viewingId) === -1) ack.push(viewingId);
 
-        // artıq gözləmədə olmayan (statusu dəyişdirilmiş/təsdiqlənmiş) sifarişləri sil
-        unseen = unseen.filter(function(id){ return pendingIds.indexOf(id) !== -1; });
+        // artıq gözləmədə olmayan (statusu dəyişdirilmiş/təsdiqlənmiş) ID-ləri təmizlə
+        ack = ack.filter(function(id){ return pendingIds.indexOf(id) !== -1; });
+        setAck(ack);
 
-        setUnseen(unseen);
-        setLastId(data.latest_id);
+        // "görünməmiş" = hazırda gözləyən AMMA hələ açılmamış sifarişlər.
+        // Bu, sadəcə son ID-ni izləməkdənsə hər dəfə real vəziyyətdən hesablanır —
+        // ona görə səhifə yenilənsə, başqa bölümə keçilsə belə itmir, təsdiqlənənə qədər davam edir.
+        var unseen = pendingIds.filter(function(id){ return ack.indexOf(id) === -1; });
 
         if (unseen.length) {
           fireAlert(unseen);

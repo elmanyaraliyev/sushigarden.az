@@ -133,6 +133,7 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
         </button>
       </div>
     </div>
+    <a class="nav-phone" id="my-orders-link" href="#" style="display:none;">📦 <span data-i18n="my_orders">Sifarişim</span></a>
     <a class="nav-phone" href="tel:+<?php echo h($phoneWa); ?>"><?php echo h($phoneDisplay); ?></a>
   </nav>
 </header>
@@ -257,6 +258,7 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
             <h2 data-i18n="about_concept_title">Bağ Konsepsiyamız</h2>
             <p data-i18n="about_concept_p1">Sushi Garden bir restorandan çox — canlı bir bağdır. Hər boşqab təbiətin sadəliyini, hər dad isə ustaların səbrini əks etdirir.</p>
             <p data-i18n="about_concept_p2">Təzə balıq hər səhər tədarük olunur, düyü əl ilə hazırlanır, tərəvəzlər isə mövsümə uyğun seçilir — sürətli qidalanma deyil, yavaş və düşünülmüş bir sənət.</p>
+            <p class="copyright-note"><span class="copyright-icon">©</span> <span id="year-about"></span> <?php echo h($restaurantName); ?> — <span data-i18n="copyright_text">Müəllif hüquqları qorunur</span></p>
           </div>
         </div>
       </div>
@@ -337,7 +339,7 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
 
 <footer id="footer">
   <div class="wrap footer-row">
-    <span>© <span id="year"></span> <?php echo h($restaurantName); ?> · sushigarden.az</span>
+    <span class="copyright-note"><span class="copyright-icon">©</span> <span id="year"></span> <?php echo h($restaurantName); ?> — <span data-i18n="copyright_text">Müəllif hüquqları qorunur</span></span>
     <span>
       <a href="https://wa.me/<?php echo h($phoneWa); ?>" target="_blank" rel="noopener">WhatsApp</a>
       <?php if ($igUrl): ?> · <a href="<?php echo h($igUrl); ?>" target="_blank" rel="noopener">Instagram</a><?php endif; ?>
@@ -386,7 +388,6 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
           <div class="service-options">
             <label><input type="radio" name="service_type" value="delivery" checked><span data-i18n="service_delivery">Çatdırılma</span></label>
             <label><input type="radio" name="service_type" value="takeaway"><span data-i18n="service_takeaway">Özü ilə aparma</span></label>
-            <label><input type="radio" name="service_type" value="dine_in"><span data-i18n="service_dine_in">Restoranda yemək</span></label>
           </div>
         </div>
 
@@ -396,11 +397,29 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
         </div>
         <div class="field-block">
           <label data-i18n="field_phone">Telefon</label>
-          <input type="tel" id="cust-phone" placeholder="+...">
+          <input type="tel" id="cust-phone" placeholder="050 123 45 67">
         </div>
         <div class="field-block" id="address-block">
           <label data-i18n="field_address">Ünvan</label>
           <input type="text" id="cust-address" data-i18n-placeholder="field_address_ph" placeholder="Çatdırılma ünvanınızı daxil edin...">
+        </div>
+
+        <div class="field-block">
+          <label data-i18n="field_time">Nə vaxt hazır olsun?</label>
+          <select id="cust-time">
+            <option value="asap" data-i18n="time_asap">Tez bir zamanda (~25 dəqiqə)</option>
+            <option value="2h" data-i18n="time_2h">2 saat sonra</option>
+            <option value="3h" data-i18n="time_3h">3 saat sonra</option>
+            <option value="5h" data-i18n="time_5h">5 saat sonra</option>
+          </select>
+        </div>
+        <div class="field-block">
+          <label data-i18n="field_party">Adam sayı (istəyə bağlı)</label>
+          <input type="number" id="cust-party" min="1" max="100" data-i18n-placeholder="field_party_ph" placeholder="Neçə nəfərsiniz?">
+        </div>
+        <div class="field-block">
+          <label data-i18n="field_notes">Qeyd (istəyə bağlı)</label>
+          <textarea id="cust-notes" data-i18n-placeholder="field_notes_ph" placeholder="Məs. zəng, allergiya, əlavə çubuqlar..." rows="2"></textarea>
         </div>
 
         <div id="order-error" class="order-error" style="display:none;"></div>
@@ -417,6 +436,7 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
       <h3 data-i18n="thanks_title">Təşəkkürlər!</h3>
       <p data-i18n="thanks_text">Sifarişiniz uğurla qəbul edildi.</p>
       <p><span data-i18n="thanks_order_no">Sifariş nömrəsi:</span> <strong id="order-number"></strong></p>
+      <a href="#" id="track-order-link" class="btn btn-ghost" data-i18n="track_order" style="margin:0 0 .8rem; display:inline-flex;">Sifarişi izlə</a>
       <button id="success-close" class="btn btn-primary" data-i18n="close_btn">Bağla</button>
     </div>
   </div>

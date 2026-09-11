@@ -30,6 +30,9 @@ $result = sg_create_order([
     'service_type' => $body['service_type'] ?? '',
     'address' => $body['address'] ?? '',
     'tip' => $body['tip'] ?? 0,
+    'notes' => $body['notes'] ?? '',
+    'party_size' => $body['party_size'] ?? '',
+    'requested_time' => $body['requested_time'] ?? 'asap',
 ], $items);
 
 if (!$result['ok']) {

@@ -17,15 +17,21 @@ var SG_STRINGS = {
     cart_empty: 'Hələ heç nə seçilməyib. Menyudan "+" düyməsinə basaraq əlavə edin.',
     tip_label: 'Bəxşiş', tip_none: 'Bəxşişsiz', tip_custom: 'Digər məbləğ',
     subtotal_label: 'Aralıq yekun', total_label: 'Ümumi',
-    service_label: 'Xidmət növü', service_delivery: 'Çatdırılma', service_takeaway: 'Özü ilə aparma', service_dine_in: 'Restoranda yemək',
+    service_label: 'Xidmət növü', service_delivery: 'Çatdırılma', service_takeaway: 'Özü ilə aparma',
     field_name: 'Adınız', field_name_ph: 'Adınız', field_phone: 'Telefon',
     field_address: 'Ünvan', field_address_ph: 'Çatdırılma ünvanınızı daxil edin...',
+    field_time: 'Nə vaxt hazır olsun?', time_asap: 'Tez bir zamanda (~25 dəqiqə)',
+    time_2h: '2 saat sonra', time_3h: '3 saat sonra', time_5h: '5 saat sonra',
+    field_party: 'Adam sayı (istəyə bağlı)', field_party_ph: 'Neçə nəfərsiniz?',
+    field_notes: 'Qeyd (istəyə bağlı)', field_notes_ph: 'Məs. zəng, allergiya, əlavə çubuqlar...',
     place_order: 'Sifarişi yerləşdir', send_whatsapp: 'WhatsApp ilə göndər', clear_cart: 'Təmizlə',
     thanks_title: 'Təşəkkürlər!', thanks_text: 'Sifarişiniz uğurla qəbul edildi.',
-    thanks_order_no: 'Sifariş nömrəsi:', close_btn: 'Bağla',
+    thanks_order_no: 'Sifariş nömrəsi:', close_btn: 'Bağla', track_order: 'Sifarişi izlə',
     err_name: 'Adınızı daxil edin.', err_phone: 'Telefon nömrənizi daxil edin.',
+    err_phone_invalid: 'Düzgün mobil nömrə daxil edin (məs. 050 123 45 67).',
     err_address: 'Çatdırılma ünvanını daxil edin.', err_network: 'Şəbəkə xətası, yenidən cəhd edin.',
-    toast_added: 'səbətə əlavə olundu'
+    toast_added: 'səbətə əlavə olundu', my_orders: 'Sifarişim',
+    copyright_text: 'Müəllif hüquqları qorunur'
   },
   ru: {
     nav_menu: 'Меню', nav_about: 'О нас', nav_gallery: 'Галерея', nav_contact: 'Контакты',
@@ -45,15 +51,21 @@ var SG_STRINGS = {
     cart_empty: 'Пока ничего не выбрано. Добавьте из меню, нажав «+».',
     tip_label: 'Чаевые', tip_none: 'Без чаевых', tip_custom: 'Другая сумма',
     subtotal_label: 'Промежуточный итог', total_label: 'Итого',
-    service_label: 'Тип обслуживания', service_delivery: 'Доставка', service_takeaway: 'С собой', service_dine_in: 'В ресторане',
+    service_label: 'Тип обслуживания', service_delivery: 'Доставка', service_takeaway: 'С собой',
     field_name: 'Ваше имя', field_name_ph: 'Ваше имя', field_phone: 'Телефон',
     field_address: 'Адрес', field_address_ph: 'Введите адрес доставки...',
+    field_time: 'Когда приготовить?', time_asap: 'Как можно скорее (~25 минут)',
+    time_2h: 'Через 2 часа', time_3h: 'Через 3 часа', time_5h: 'Через 5 часов',
+    field_party: 'Количество человек (необязательно)', field_party_ph: 'Сколько человек?',
+    field_notes: 'Примечание (необязательно)', field_notes_ph: 'Напр. позвонить, аллергия, доп. палочки...',
     place_order: 'Оформить заказ', send_whatsapp: 'Отправить через WhatsApp', clear_cart: 'Очистить',
     thanks_title: 'Спасибо!', thanks_text: 'Ваш заказ успешно принят.',
-    thanks_order_no: 'Номер заказа:', close_btn: 'Закрыть',
+    thanks_order_no: 'Номер заказа:', close_btn: 'Закрыть', track_order: 'Отследить заказ',
     err_name: 'Введите ваше имя.', err_phone: 'Введите номер телефона.',
+    err_phone_invalid: 'Введите корректный номер телефона (напр. 050 123 45 67).',
     err_address: 'Введите адрес доставки.', err_network: 'Ошибка сети, попробуйте снова.',
-    toast_added: 'добавлено в корзину'
+    toast_added: 'добавлено в корзину', my_orders: 'Мой заказ',
+    copyright_text: 'Все права защищены'
   },
   en: {
     nav_menu: 'Menu', nav_about: 'About Us', nav_gallery: 'Gallery', nav_contact: 'Contact',
@@ -73,21 +85,30 @@ var SG_STRINGS = {
     cart_empty: 'Nothing selected yet. Add items from the menu using "+".',
     tip_label: 'Tip', tip_none: 'No tip', tip_custom: 'Custom amount',
     subtotal_label: 'Subtotal', total_label: 'Total',
-    service_label: 'Service Type', service_delivery: 'Delivery', service_takeaway: 'Takeaway', service_dine_in: 'Dine In',
+    service_label: 'Service Type', service_delivery: 'Delivery', service_takeaway: 'Takeaway',
     field_name: 'Your Name', field_name_ph: 'Your Name', field_phone: 'Phone',
     field_address: 'Address', field_address_ph: 'Enter your delivery address...',
+    field_time: 'When should it be ready?', time_asap: 'As soon as possible (~25 min)',
+    time_2h: 'In 2 hours', time_3h: 'In 3 hours', time_5h: 'In 5 hours',
+    field_party: 'Number of people (optional)', field_party_ph: 'How many people?',
+    field_notes: 'Notes (optional)', field_notes_ph: 'E.g. call on arrival, allergy, extra chopsticks...',
     place_order: 'Place Order', send_whatsapp: 'Send via WhatsApp', clear_cart: 'Clear',
     thanks_title: 'Thank you!', thanks_text: 'Your order has been placed successfully.',
-    thanks_order_no: 'Order number:', close_btn: 'Close',
+    thanks_order_no: 'Order number:', close_btn: 'Close', track_order: 'Track Order',
     err_name: 'Please enter your name.', err_phone: 'Please enter your phone number.',
+    err_phone_invalid: 'Please enter a valid phone number (e.g. 050 123 45 67).',
     err_address: 'Please enter your delivery address.', err_network: 'Network error, please try again.',
-    toast_added: 'added to cart'
+    toast_added: 'added to cart', my_orders: 'My Order',
+    copyright_text: 'All rights reserved'
   }
 };
 
 document.addEventListener('DOMContentLoaded', function () {
+  var currentYear = new Date().getFullYear();
   var yearEl = document.getElementById('year');
-  if (yearEl) yearEl.textContent = new Date().getFullYear();
+  if (yearEl) yearEl.textContent = currentYear;
+  var yearAboutEl = document.getElementById('year-about');
+  if (yearAboutEl) yearAboutEl.textContent = currentYear;
 
   // mobile nav
   var navToggle = document.getElementById('nav-toggle');
@@ -354,11 +375,15 @@ document.addEventListener('DOMContentLoaded', function () {
   var custName = document.getElementById('cust-name');
   var custPhone = document.getElementById('cust-phone');
   var custAddress = document.getElementById('cust-address');
+  var custTime = document.getElementById('cust-time');
+  var custParty = document.getElementById('cust-party');
+  var custNotes = document.getElementById('cust-notes');
   var orderError = document.getElementById('order-error');
   var placeOrderBtn = document.getElementById('place-order');
   var formView = document.getElementById('cart-form-view');
   var successView = document.getElementById('cart-success-view');
   var orderNumberEl = document.getElementById('order-number');
+  var trackOrderLink = document.getElementById('track-order-link');
   var successCloseBtn = document.getElementById('success-close');
 
   if (!pill || !drawer) return;
@@ -369,6 +394,17 @@ document.addEventListener('DOMContentLoaded', function () {
     return (Math.round(n * 100) / 100).toFixed(2).replace('.', ',');
   }
 
+  function isValidAzPhone(phone) {
+    var digits = (phone || '').replace(/\D+/g, '');
+    var local;
+    if (digits.indexOf('994') === 0 && digits.length === 12) local = digits.slice(3);
+    else if (digits.indexOf('0') === 0 && digits.length === 10) local = digits.slice(1);
+    else if (digits.length === 9) local = digits;
+    else return false;
+    var validPrefixes = ['10', '50', '51', '55', '60', '70', '77', '99'];
+    return validPrefixes.indexOf(local.slice(0, 2)) !== -1;
+  }
+
   function getServiceType() {
     var checked = document.querySelector('input[name="service_type"]:checked');
     return checked ? checked.value : 'delivery';
@@ -376,9 +412,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
   function serviceLabel(type) {
     var dict = SG_STRINGS[window.__sgLang || 'az'] || SG_STRINGS.az;
-    if (type === 'delivery') return dict.service_delivery;
-    if (type === 'takeaway') return dict.service_takeaway;
-    return dict.service_dine_in;
+    return type === 'delivery' ? dict.service_delivery : dict.service_takeaway;
   }
 
   function render() {
@@ -483,6 +517,9 @@ document.addEventListener('DOMContentLoaded', function () {
     if (custName) custName.value = '';
     if (custPhone) custPhone.value = '';
     if (custAddress) custAddress.value = '';
+    if (custTime) custTime.value = 'asap';
+    if (custParty) custParty.value = '';
+    if (custNotes) custNotes.value = '';
     currentTip = 0;
     if (tipCustomInput) { tipCustomInput.value = ''; tipCustomInput.style.display = 'none'; }
     if (tipOptions) {
@@ -541,6 +578,7 @@ document.addEventListener('DOMContentLoaded', function () {
       var errs = [];
       if (!name) errs.push(dict.err_name);
       if (!phone) errs.push(dict.err_phone);
+      else if (!isValidAzPhone(phone)) errs.push(dict.err_phone_invalid);
       if (svcType === 'delivery' && !address) errs.push(dict.err_address);
       if (errs.length) {
         orderError.textContent = errs.join(' ');
@@ -550,13 +588,17 @@ document.addEventListener('DOMContentLoaded', function () {
 
       placeOrderBtn.disabled = true;
       var items = ids.map(function (id) { return { id: parseInt(id, 10), qty: cart[id].qty }; });
+      var timeChoice = custTime ? custTime.value : 'asap';
+      var partySize = custParty && custParty.value ? custParty.value : '';
+      var notes = custNotes ? custNotes.value.trim() : '';
 
       fetch('order.php', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           csrf: csrfToken, items: items, name: name, phone: phone,
-          service_type: svcType, address: address, tip: currentTip
+          service_type: svcType, address: address, tip: currentTip,
+          requested_time: timeChoice, party_size: partySize, notes: notes
         })
       })
         .then(function (r) { return r.json(); })
@@ -566,6 +608,18 @@ document.addEventListener('DOMContentLoaded', function () {
             orderNumberEl.textContent = data.order_number;
             formView.style.display = 'none';
             successView.style.display = 'block';
+            try {
+              new Audio('assets/sounds/order-confirm-customer.mp3').play().catch(function () {});
+            } catch (e) {}
+            if (trackOrderLink && data.track_token) {
+              trackOrderLink.href = 'track.php?id=' + data.order_id + '&t=' + data.track_token;
+              try {
+                var mine = JSON.parse(localStorage.getItem('sg_my_orders') || '[]');
+                mine.push({ id: data.order_id, t: data.track_token, number: data.order_number });
+                if (mine.length > 20) mine = mine.slice(-20);
+                localStorage.setItem('sg_my_orders', JSON.stringify(mine));
+              } catch (e) {}
+            }
             cart = {};
             resetCheckoutFields();
             render();
@@ -661,4 +715,18 @@ document.addEventListener('DOMContentLoaded', function () {
   })();
 
   render();
+
+  // "Sifarişim" keçidi — əvvəllər bu brauzerdən verilmiş sifariş varsa göstərilir
+  (function initMyOrdersLink() {
+    var link = document.getElementById('my-orders-link');
+    if (!link) return;
+    try {
+      var mine = JSON.parse(localStorage.getItem('sg_my_orders') || '[]');
+      if (mine.length) {
+        var last = mine[mine.length - 1];
+        link.href = 'track.php?id=' + last.id + '&t=' + last.t;
+        link.style.display = 'inline-flex';
+      }
+    } catch (e) {}
+  })();
 });

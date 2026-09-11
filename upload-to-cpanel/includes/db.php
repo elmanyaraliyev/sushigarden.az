@@ -64,6 +64,19 @@ function sg_migrate(PDO $pdo) {
             created_at TEXT NOT NULL DEFAULT (datetime('now'))
         );
     ");
+    $orderCols = $pdo->query("PRAGMA table_info(orders)")->fetchAll(PDO::FETCH_ASSOC);
+    $orderColNames = array_column($orderCols, 'name');
+    foreach ([
+        'notes' => "TEXT NOT NULL DEFAULT ''",
+        'party_size' => "INTEGER NULL",
+        'requested_time' => "TEXT NULL",
+        'track_token' => "TEXT NULL",
+    ] as $col => $def) {
+        if (!in_array($col, $orderColNames, true)) {
+            $pdo->exec("ALTER TABLE orders ADD COLUMN $col $def");
+        }
+    }
+
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS order_items (
             id INTEGER PRIMARY KEY AUTOINCREMENT,

@@ -88,6 +88,7 @@ require __DIR__ . '/includes/header.php';
     <label><input type="radio" name="sg_sound" value="chime"> Zəng (üçlü)</label>
     <label><input type="radio" name="sg_sound" value="beep1"> Bip (tək)</label>
     <label><input type="radio" name="sg_sound" value="beep2"> Bip (ikili)</label>
+    <label><input type="radio" name="sg_sound" value="bundled"> Restoran zəngi</label>
     <label><input type="radio" name="sg_sound" value="custom"> Öz səsim</label>
     <label><input type="radio" name="sg_sound" value="none"> Səssiz</label>
   </div>
