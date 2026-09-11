@@ -1,11 +1,13 @@
 # Canlı verilənlər bazası — əsl versiya serverdə saxlanılır, burada izlənmir
 upload-to-cpanel/data/*.sqlite
 
-# İstifadəçi tərəfindən yüklənən şəkillər (admin panel vasitəsilə)
+# İstifadəçi tərəfindən yüklənən şəkillər/səslər (admin panel vasitəsilə)
 upload-to-cpanel/uploads/products/*
 upload-to-cpanel/uploads/branding/*
+upload-to-cpanel/uploads/sounds/*
 !upload-to-cpanel/uploads/products/.gitkeep
 !upload-to-cpanel/uploads/branding/.gitkeep
+!upload-to-cpanel/uploads/sounds/.gitkeep
 
 # Yükləmə paketləri (endirilmiş update zip-ləri) — bunlar kod deyil, çıxarılan artefaktlardır
 *.zip

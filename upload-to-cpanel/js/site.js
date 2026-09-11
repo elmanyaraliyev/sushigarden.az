@@ -30,7 +30,7 @@ var SG_STRINGS = {
     err_name: 'Adınızı daxil edin.', err_phone: 'Telefon nömrənizi daxil edin.',
     err_phone_invalid: 'Düzgün mobil nömrə daxil edin (məs. 050 123 45 67).',
     err_address: 'Çatdırılma ünvanını daxil edin.', err_network: 'Şəbəkə xətası, yenidən cəhd edin.',
-    toast_added: 'səbətə əlavə olundu', my_orders: 'Sifarişim',
+    toast_added: 'səbətə əlavə olundu', my_orders: 'Sifarişim', nav_login: 'Giriş / Qeydiyyat',
     copyright_text: 'Müəllif hüquqları qorunur'
   },
   ru: {
@@ -64,7 +64,7 @@ var SG_STRINGS = {
     err_name: 'Введите ваше имя.', err_phone: 'Введите номер телефона.',
     err_phone_invalid: 'Введите корректный номер телефона (напр. 050 123 45 67).',
     err_address: 'Введите адрес доставки.', err_network: 'Ошибка сети, попробуйте снова.',
-    toast_added: 'добавлено в корзину', my_orders: 'Мой заказ',
+    toast_added: 'добавлено в корзину', my_orders: 'Мой заказ', nav_login: 'Войти',
     copyright_text: 'Все права защищены'
   },
   en: {
@@ -98,7 +98,7 @@ var SG_STRINGS = {
     err_name: 'Please enter your name.', err_phone: 'Please enter your phone number.',
     err_phone_invalid: 'Please enter a valid phone number (e.g. 050 123 45 67).',
     err_address: 'Please enter your delivery address.', err_network: 'Network error, please try again.',
-    toast_added: 'added to cart', my_orders: 'My Order',
+    toast_added: 'added to cart', my_orders: 'My Order', nav_login: 'Login',
     copyright_text: 'All rights reserved'
   }
 };
@@ -387,6 +387,11 @@ document.addEventListener('DOMContentLoaded', function () {
   var custName = document.getElementById('cust-name');
   var custPhone = document.getElementById('cust-phone');
   var custAddress = document.getElementById('cust-address');
+  // Daxil olmuş müştəri üçün ad/telefonu əvvəlcədən doldur — hər dəfə yazmasın
+  var loggedInName = document.body.getAttribute('data-customer-name') || '';
+  var loggedInPhone = document.body.getAttribute('data-customer-phone') || '';
+  if (custName && loggedInName) custName.value = loggedInName;
+  if (custPhone && loggedInPhone) custPhone.value = loggedInPhone;
   var custTime = document.getElementById('cust-time');
   var custParty = document.getElementById('cust-party');
   var custNotes = document.getElementById('cust-notes');
@@ -526,8 +531,8 @@ document.addEventListener('DOMContentLoaded', function () {
   });
 
   function resetCheckoutFields() {
-    if (custName) custName.value = '';
-    if (custPhone) custPhone.value = '';
+    if (custName) custName.value = loggedInName || '';
+    if (custPhone) custPhone.value = loggedInPhone || '';
     if (custAddress) custAddress.value = '';
     if (custTime) custTime.value = 'asap';
     if (custParty) custParty.value = '';

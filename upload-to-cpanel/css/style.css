@@ -137,6 +137,7 @@ header.scrolled .nav{padding:11px 28px;}
    masaüstündə ayrıca .nav-orders-desktop pilli düymə ilə göstərilir. */
 .nav-orders-item{display:none;}
 
+.nav-actions{display:flex; align-items:center; gap:.6rem;}
 .nav-phone{
   font-weight:600; font-variant-numeric:tabular-nums; font-size:.9rem;
   border:1px solid var(--line); padding:.5rem 1rem; border-radius:var(--radius);

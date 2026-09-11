@@ -1,5 +1,6 @@
 <?php
-require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/customer_auth.php';
+$customer = sg_current_customer();
 $menu = sg_get_menu(true); // yalnız aktiv kateqoriya/məhsullar
 $featured = sg_get_featured(4);
 
@@ -31,9 +32,10 @@ $csrf = sg_csrf_token();
  * datası (JSON-LD) — Google/Yandex/Bing-in restoranı düzgün anlaması üçün.
  * ------------------------------------------------------------------- */
 $siteUrl = 'https://sushigarden.az/';
-$seoTitle = $restaurantName . ' — Bakıda Suşi Restoranı | Onlayn Sifariş və Çatdırılma';
-$seoDescription = $restaurantName . ' — Bakıda təzə suşi, sushi roll, hot roll, burrito və noodles. '
-    . $restaurantTagline . ' Onlayn sifariş, sürətli çatdırılma, özü aparma və restoranda yemək seçimi.';
+$seoTitle = sg_setting('seo_title', '') ?: ($restaurantName . ' — Bakıda Suşi Restoranı | Onlayn Sifariş və Çatdırılma');
+$seoDescription = sg_setting('seo_description', '') ?: ($restaurantName . ' — Bakıda təzə suşi, sushi roll, hot roll, burrito və noodles. '
+    . $restaurantTagline . ' Onlayn sifariş, sürətli çatdırılma, özü aparma və restoranda yemək seçimi.');
+$seoKeywords = sg_setting('seo_keywords', 'sushi, sushi garden, suşi bakı, sushi baku, sushi sifarişi, sushi çatdırılma, yapon mətbəxi bakı, sushi roll, hot roll, sushi bar');
 $ogImagePath = $logoFullCustom ?: 'assets/logo-full.jpg';
 $ogImageUrl = $siteUrl . ltrim($ogImagePath, '/');
 
@@ -70,7 +72,7 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?php echo h($seoTitle); ?></title>
 <meta name="description" content="<?php echo h($seoDescription); ?>">
-<meta name="keywords" content="sushi, sushi garden, suşi bakı, sushi baku, sushi sifarişi, sushi çatdırılma, yapon mətbəxi bakı, sushi roll, hot roll, sushi bar">
+<meta name="keywords" content="<?php echo h($seoKeywords); ?>">
 <link rel="canonical" href="<?php echo h($siteUrl); ?>">
 <meta property="og:title" content="<?php echo h($seoTitle); ?>">
 <meta property="og:description" content="<?php echo h($seoDescription); ?>">
@@ -95,7 +97,7 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
 <script type="application/ld+json"><?php echo json_encode($restaurantSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?></script>
 <script>document.documentElement.classList.add('js');</script>
 </head>
-<body data-wa-phone="<?php echo h($phoneWa); ?>" data-csrf="<?php echo h($csrf); ?>">
+<body data-wa-phone="<?php echo h($phoneWa); ?>" data-csrf="<?php echo h($csrf); ?>" data-customer-name="<?php echo h($customer['name'] ?? ''); ?>" data-customer-phone="<?php echo h($customer['phone'] ?? ''); ?>">
 
 <header>
   <nav class="nav">
@@ -113,7 +115,12 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
       <li><button type="button" data-tab="about" data-i18n="nav_about">Haqqımızda</button></li>
       <li><button type="button" data-tab="gallery" data-i18n="nav_gallery">Qalereya</button></li>
       <li><button type="button" data-tab="contact" data-i18n="nav_contact">Əlaqə</button></li>
-      <li class="nav-orders-item"><a href="track.php" class="my-orders-link">📦 <span data-i18n="my_orders">Sifarişim</span></a></li>
+      <?php if ($customer): ?>
+        <li class="nav-orders-item"><a href="account.php">👤 <?php echo h($customer['name']); ?></a></li>
+      <?php else: ?>
+        <li class="nav-orders-item"><a href="track.php" class="my-orders-link">📦 <span data-i18n="my_orders">Sifarişim</span></a></li>
+        <li class="nav-orders-item"><a href="login.php">🔑 <span data-i18n="nav_login">Giriş</span></a></li>
+      <?php endif; ?>
     </ul>
     <div class="lang-switch" id="lang-switch">
       <button type="button" class="lang-trigger" id="lang-trigger" aria-haspopup="true" aria-expanded="false">
@@ -136,8 +143,15 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
         </button>
       </div>
     </div>
-    <a class="nav-phone my-orders-link nav-orders-desktop" href="track.php">📦 <span data-i18n="my_orders">Sifarişim</span></a>
-    <a class="nav-phone" href="tel:+<?php echo h($phoneWa); ?>"><?php echo h($phoneDisplay); ?></a>
+    <div class="nav-actions">
+      <?php if ($customer): ?>
+        <a class="nav-phone nav-orders-desktop" href="account.php">👤 <?php echo h($customer['name']); ?></a>
+      <?php else: ?>
+        <a class="nav-phone my-orders-link nav-orders-desktop" href="track.php">📦 <span data-i18n="my_orders">Sifarişim</span></a>
+        <a class="nav-phone nav-orders-desktop" href="login.php">🔑 <span data-i18n="nav_login">Giriş</span></a>
+      <?php endif; ?>
+      <a class="nav-phone" href="tel:+<?php echo h($phoneWa); ?>"><?php echo h($phoneDisplay); ?></a>
+    </div>
   </nav>
 </header>
 

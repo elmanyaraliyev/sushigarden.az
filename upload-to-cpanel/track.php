@@ -5,6 +5,7 @@ $restaurantName = sg_setting('restaurant_name', 'Sushi Garden');
 $logoIconCustom = sg_setting('logo_icon', '');
 $phoneWa = sg_setting('phone_wa', defined('SG_PHONE_WA') ? SG_PHONE_WA : '');
 $colorTheme = sg_setting('color_theme', 'forest');
+$completedSoundUrl = sg_setting('customer_completed_sound', '') ?: 'assets/sounds/order-completed.mp3';
 
 $id = (int)($_GET['id'] ?? 0);
 $token = (string)($_GET['t'] ?? '');
@@ -243,7 +244,7 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
           if (data.status === 'cancelled') { window.location.reload(); return; }
           applyStatus(data.status);
           if (data.status === 'completed') {
-            try { new Audio('assets/sounds/order-completed.mp3').play().catch(function(){}); } catch (e) {}
+            try { new Audio(<?php echo json_encode($completedSoundUrl); ?>).play().catch(function(){}); } catch (e) {}
           } else {
             playPing();
           }

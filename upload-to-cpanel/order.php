@@ -1,6 +1,6 @@
 <?php
 // Sushi Garden — sifariş qəbulu (səbətdən AJAX ilə çağırılır).
-require_once __DIR__ . '/includes/functions.php';
+require_once __DIR__ . '/includes/customer_auth.php';
 
 header('Content-Type: application/json; charset=utf-8');
 
@@ -23,6 +23,7 @@ if (!sg_csrf_check($body['csrf'] ?? '')) {
 }
 
 $items = is_array($body['items'] ?? null) ? $body['items'] : [];
+$customer = sg_current_customer();
 
 $result = sg_create_order([
     'name' => $body['name'] ?? '',
@@ -33,6 +34,7 @@ $result = sg_create_order([
     'notes' => $body['notes'] ?? '',
     'party_size' => $body['party_size'] ?? '',
     'requested_time' => $body['requested_time'] ?? 'asap',
+    'customer_id' => $customer ? $customer['id'] : null,
 ], $items);
 
 if (!$result['ok']) {

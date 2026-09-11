@@ -71,11 +71,23 @@ function sg_migrate(PDO $pdo) {
         'party_size' => "INTEGER NULL",
         'requested_time' => "TEXT NULL",
         'track_token' => "TEXT NULL",
+        'customer_id' => "INTEGER NULL",
     ] as $col => $def) {
         if (!in_array($col, $orderColNames, true)) {
             $pdo->exec("ALTER TABLE orders ADD COLUMN $col $def");
         }
     }
+
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS customers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            name TEXT NOT NULL,
+            phone TEXT NOT NULL UNIQUE,
+            email TEXT NULL,
+            password_hash TEXT NOT NULL,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+    ");
 
     $pdo->exec("
         CREATE TABLE IF NOT EXISTS order_items (
@@ -119,6 +131,9 @@ function sg_migrate(PDO $pdo) {
             'logo_icon' => '',
             'logo_full' => '',
             'hero_image' => '',
+            'seo_title' => 'Sushi Garden — Bakıda Suşi Restoranı | Onlayn Sifariş və Çatdırılma',
+            'seo_description' => 'Sushi Garden — Bakıda təzə suşi, sushi roll, hot roll, burrito və noodles. Onlayn sifariş, sürətli çatdırılma, özü aparma və restoranda yemək seçimi.',
+            'seo_keywords' => 'sushi, sushi garden, suşi bakı, sushi baku, sushi sifarişi, sushi çatdırılma, yapon mətbəxi bakı, sushi roll, hot roll, sushi bar',
         ];
         $insSetting = $pdo->prepare('INSERT OR IGNORE INTO site_settings (k, v) VALUES (?, ?)');
         foreach ($defaults as $k => $v) {

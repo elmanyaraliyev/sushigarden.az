@@ -263,6 +263,39 @@ function sg_save_branding_upload($fileArray, $maxW = 1200) {
     return 'uploads/branding/' . $filename;
 }
 
+/**
+ * Admin panelindən yüklənən bildiriş səs faylını (mp3/wav/ogg) uploads/sounds/-a
+ * saxlayır. Uğurlu olarsa saytın kökünə nisbətən yol qaytarır (məs.
+ * "uploads/sounds/xxx.mp3"), olmazsa null.
+ */
+function sg_save_sound_upload($fileArray, $maxBytes = 2097152) {
+    if (empty($fileArray) || !isset($fileArray['tmp_name']) || $fileArray['error'] !== UPLOAD_ERR_OK) {
+        return null;
+    }
+    if ((int)$fileArray['size'] > $maxBytes) return null;
+
+    $ext = strtolower(pathinfo($fileArray['name'], PATHINFO_EXTENSION));
+    if (!in_array($ext, ['mp3', 'wav', 'ogg'], true)) return null;
+
+    $binary = @file_get_contents($fileArray['tmp_name']);
+    if ($binary === false || strlen($binary) < 10) return null;
+
+    $dir = SG_ROOT . '/uploads/sounds';
+    if (!sg_ensure_writable_dir($dir)) {
+        error_log('Sushi Garden: uploads/sounds qovluğu yazıla bilmir: ' . $dir);
+        return null;
+    }
+
+    $filename = 's' . time() . '_' . substr(bin2hex(random_bytes(4)), 0, 8) . '.' . $ext;
+    $path = $dir . '/' . $filename;
+    if (@file_put_contents($path, $binary) === false || !is_file($path)) {
+        error_log('Sushi Garden: səs faylı diskə yazıla bilmədi: ' . $path);
+        return null;
+    }
+    @chmod($path, 0644);
+    return 'uploads/sounds/' . $filename;
+}
+
 function sg_delete_product_image($filename) {
     if (!$filename) return;
     $path = SG_UPLOADS_DIR . '/' . $filename;
@@ -462,14 +495,15 @@ function sg_create_order($data, $rawItems) {
     $requestedTime = date('Y-m-d H:i:s', time() + $minutes * 60);
 
     $trackToken = bin2hex(random_bytes(12));
+    $customerId = isset($data['customer_id']) ? (int)$data['customer_id'] : null;
 
     $pdo->beginTransaction();
     try {
         $stmt = $pdo->prepare('
-            INSERT INTO orders (customer_name, customer_phone, service_type, address, subtotal, tip, total, status, notes, party_size, requested_time, track_token)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            INSERT INTO orders (customer_name, customer_phone, service_type, address, subtotal, tip, total, status, notes, party_size, requested_time, track_token, customer_id)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ');
-        $stmt->execute([$name, $phone, $serviceType, $address, $subtotal, $tip, $total, 'pending', $notes, $partySize, $requestedTime, $trackToken]);
+        $stmt->execute([$name, $phone, $serviceType, $address, $subtotal, $tip, $total, 'pending', $notes, $partySize, $requestedTime, $trackToken, $customerId]);
         $orderId = (int)$pdo->lastInsertId();
 
         $itemStmt = $pdo->prepare('
