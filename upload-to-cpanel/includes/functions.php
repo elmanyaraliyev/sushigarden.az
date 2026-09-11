@@ -180,6 +180,21 @@ function sg_save_product_photo($fileArray) {
 }
 
 /**
+ * Qovluğa həqiqətən fayl yaradıla bilib-bilmədiyini əsl yazma cəhdi ilə yoxlayır.
+ * PHP-nin is_writable()-i qovluqlar üçün ETIBARSIZDIR: yalnız "write" bitinə baxır,
+ * "execute" (axtarış) bitini nəzərə almır — məs. 0644 icazəli qovluqda write biti
+ * var deyə is_writable() true qaytarır, amma execute biti olmadığı üçün əslində
+ * heç bir fayl yaradıla bilmir. Ona görə real fayl yazıb-silməklə yoxlayırıq.
+ */
+function sg_dir_actually_writable($dir) {
+    if (!is_dir($dir)) return false;
+    $test = rtrim($dir, '/') . '/.sg_write_test_' . getmypid() . '.tmp';
+    $ok = @file_put_contents($test, 'x') !== false;
+    if ($ok) @unlink($test);
+    return $ok;
+}
+
+/**
  * Qovluğun mövcud və yazılabilən olmasını təmin edir (yoxdursa yaradır,
  * icazələri düzəltməyə çalışır). Uğurlu olarsa true qaytarır.
  */
@@ -187,17 +202,15 @@ function sg_ensure_writable_dir($dir) {
     if (!is_dir($dir)) {
         @mkdir($dir, 0755, true);
     }
-    if (is_dir($dir) && !is_writable($dir)) {
-        @chmod($dir, 0755);
-    }
-    if (is_dir($dir) && !is_writable($dir)) {
-        // Bəzi paylaşılan hostinqlərdə (PHP prosesinin sahibliyi fərqli olanda) 0755 kifayət etmir.
-        @chmod($dir, 0775);
-    }
-    if (is_dir($dir) && !is_writable($dir)) {
-        @chmod($dir, 0777);
-    }
-    return is_dir($dir) && is_writable($dir);
+    if (!is_dir($dir)) return false;
+
+    // is_writable()-ə güvənmədən HƏMİŞƏ 0755 tətbiq edirik (execute biti daxil
+    // olsun deyə), sonra əsl yazma testi ilə təsdiqləyirik.
+    if (!sg_dir_actually_writable($dir)) @chmod($dir, 0755);
+    if (!sg_dir_actually_writable($dir)) @chmod($dir, 0775);
+    if (!sg_dir_actually_writable($dir)) @chmod($dir, 0777);
+
+    return sg_dir_actually_writable($dir);
 }
 
 /**
