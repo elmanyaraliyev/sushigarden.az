@@ -15,6 +15,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $phoneWa2 = trim($_POST['phone_wa2'] ?? '');
     $address = trim($_POST['address'] ?? '');
     $mapsUrl = trim($_POST['maps_url'] ?? '');
+    $contactEmail = trim($_POST['contact_email'] ?? '');
 
     if ($phoneDisplay === '' || $phoneWa === '') {
         $_SESSION['flash_err'] = 'Telefon nömrəsi boş ola bilməz.';
@@ -27,6 +28,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     sg_set_setting('phone_wa2', $phoneWa2);
     sg_set_setting('address', $address);
     sg_set_setting('maps_url', $mapsUrl);
+    sg_set_setting('contact_email', $contactEmail);
 
     $_SESSION['flash_ok'] = 'Əlaqə məlumatları yeniləndi.';
     header('Location: contacts.php');
@@ -58,6 +60,10 @@ require __DIR__ . '/includes/header.php';
   <div class="field">
     <label>Ünvan</label>
     <input type="text" name="address" value="<?php echo h(sg_setting('address')); ?>">
+  </div>
+  <div class="field">
+    <label>E-poçt (istəyə bağlı)</label>
+    <input type="email" name="contact_email" placeholder="info@sushigarden.az" value="<?php echo h(sg_setting('contact_email', 'info@sushigarden.az')); ?>">
   </div>
   <div class="field">
     <label>Google Maps linki</label>

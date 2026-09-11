@@ -12,6 +12,7 @@ $restaurantTagline = sg_setting('restaurant_tagline', 'Bakının qəlbində təz
 $phoneDisplay = sg_setting('phone_display', defined('SG_PHONE_DISPLAY') ? SG_PHONE_DISPLAY : '');
 $phoneWa = sg_setting('phone_wa', defined('SG_PHONE_WA') ? SG_PHONE_WA : '');
 $address = sg_setting('address', '');
+$contactEmail = sg_setting('contact_email', 'info@sushigarden.az');
 $mapsUrl = sg_setting('maps_url', defined('SG_MAPS_URL') ? SG_MAPS_URL : '#');
 $igUrl = sg_setting('social_instagram', '');
 $fbUrl = sg_setting('social_facebook', '');
@@ -84,11 +85,12 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
 <meta name="twitter:image" content="<?php echo h($ogImageUrl); ?>">
 <meta name="robots" content="index, follow">
 <meta name="theme-color" content="#12261A">
-<link rel="icon" href="<?php echo h($logoIconCustom ?: 'assets/logo-icon.jpg'); ?>">
+<link rel="icon" href="<?php echo h(sg_favicon_url()); ?>" type="image/jpeg">
+<link rel="apple-touch-icon" href="<?php echo h(sg_favicon_url()); ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="image" href="<?php echo h($logoFullCustom ?: 'assets/logo-full.webp'); ?>" fetchpriority="high">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css?v=<?php echo (int)@filemtime(__DIR__ . '/css/style.css'); ?>">
 <script type="application/ld+json"><?php echo json_encode($restaurantSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?></script>
 <script>document.documentElement.classList.add('js');</script>
@@ -189,8 +191,7 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
       <section class="menu-section" id="menyu">
         <div class="wrap">
           <div class="section-head reveal">
-            <p class="eyebrow" data-i18n="menu_eyebrow">Menyu</p>
-            <h2 data-i18n="menu_title">Fəsil seçimləri</h2>
+            <h2 data-i18n="menu_eyebrow">Menyu</h2>
           </div>
 
           <?php if (count($catsWithItems) > 1): ?>
@@ -306,6 +307,9 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
               <ul class="info-list">
                 <li><span class="k" data-i18n="contact_address">Ünvan</span><span class="v"><?php echo h($address); ?></span></li>
                 <li><span class="k" data-i18n="contact_phone">Telefon</span><span class="v"><a href="tel:+<?php echo h($phoneWa); ?>" style="text-decoration:none;"><?php echo h($phoneDisplay); ?></a></span></li>
+                <?php if ($contactEmail): ?>
+                <li><span class="k" data-i18n="contact_email">E-poçt</span><span class="v"><a href="mailto:<?php echo h($contactEmail); ?>" style="text-decoration:none;"><?php echo h($contactEmail); ?></a></span></li>
+                <?php endif; ?>
               </ul>
               <?php if ($hours): ?>
               <ul class="hours-list">

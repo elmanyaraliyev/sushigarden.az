@@ -50,16 +50,16 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?php echo $valid ? 'Sifariş #' . (int)$order['id'] : 'Sifariş tapılmadı'; ?> — <?php echo h($restaurantName); ?></title>
 <meta name="robots" content="noindex, nofollow">
-<link rel="icon" href="<?php echo h($logoIconCustom ?: 'assets/logo-icon.jpg'); ?>">
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="<?php echo h(sg_favicon_url()); ?>" type="image/jpeg">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css?v=<?php echo (int)@filemtime(__DIR__ . '/css/style.css'); ?>">
 <style>
   .track-wrap{max-width:640px; margin:0 auto; padding:70px 24px 90px;}
   .track-card{background:var(--bg-raised); border:1px solid var(--line); border-radius:16px; padding:2.2rem; box-shadow:var(--shadow);}
   .track-head{text-align:center; margin-bottom:2rem;}
-  .track-head .wordmark{display:inline-flex; align-items:center; gap:.6rem; font-family:'Playfair Display',serif; font-size:1.2rem; font-weight:700; text-decoration:none; color:var(--text); margin-bottom:1.2rem;}
+  .track-head .wordmark{display:inline-flex; align-items:center; gap:.6rem; font-family:'Cormorant Garamond',serif; font-size:1.2rem; font-weight:700; text-decoration:none; color:var(--text); margin-bottom:1.2rem;}
   .track-head .brand-icon{width:34px; height:34px; border-radius:50%; object-fit:cover;}
-  .track-order-no{font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:800;}
+  .track-order-no{font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:800;}
   .track-placed{color:var(--text-soft); font-size:.86rem; margin-top:.3rem;}
   .track-stepper{display:flex; justify-content:space-between; margin:2.2rem 0; position:relative;}
   .track-stepper::before{content:''; position:absolute; top:20px; left:8%; right:8%; height:2px; background:var(--line); z-index:0;}
@@ -97,7 +97,7 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
     <?php if (!$valid): ?>
       <div class="track-error">
         <p style="font-size:2.4rem; margin-bottom:.6rem;">🔍</p>
-        <h2 style="font-family:'Playfair Display',serif;">Sifarişinizi tapın</h2>
+        <h2 style="font-family:'Cormorant Garamond',serif;">Sifarişinizi tapın</h2>
         <p style="color:var(--text-soft); margin-top:.6rem;">Sifariş nömrənizi və sifariş zamanı yazdığınız telefon nömrənizi daxil edin.</p>
       </div>
       <?php if ($lookupError): ?><div class="order-error" style="margin-bottom:1rem;"><?php echo h($lookupError); ?></div><?php endif; ?>

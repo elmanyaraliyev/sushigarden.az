@@ -285,6 +285,19 @@ function sg_color_themes() {
     ];
 }
 
+/**
+ * Favicon linkini fayl dəyişmə vaxtına (mtime) görə keş-sındıran sorğu parametri
+ * ilə qaytarır — brauzerlərin favicon-u çox aqressiv keşləməsinin qarşısını almaq üçün
+ * (loqo dəyişəndə köhnə ikon uzun müddət görünüb qalırdı).
+ */
+function sg_favicon_url($fromAdmin = false) {
+    $path = sg_setting('logo_icon', '') ?: 'assets/logo-icon.jpg';
+    $fsPath = SG_ROOT . '/' . ltrim($path, '/');
+    $v = @filemtime($fsPath) ?: time();
+    $prefix = $fromAdmin ? '../' : '';
+    return $prefix . $path . '?v=' . $v;
+}
+
 function sg_csrf_token() {
     if (session_status() !== PHP_SESSION_ACTIVE) session_start();
     if (empty($_SESSION['csrf'])) {

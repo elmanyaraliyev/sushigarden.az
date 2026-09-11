@@ -101,6 +101,7 @@ function sg_migrate(PDO $pdo) {
             'phone_wa' => defined('SG_PHONE_WA') ? SG_PHONE_WA : '',
             'phone_wa2' => '',
             'address' => 'Bakı, Azərbaycan',
+            'contact_email' => 'info@sushigarden.az',
             'maps_url' => defined('SG_MAPS_URL') ? SG_MAPS_URL : '',
             'hours' => json_encode([
                 'mon' => ['open' => '11:00', 'close' => '23:00', 'closed' => 0],

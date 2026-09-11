@@ -142,7 +142,7 @@ require __DIR__ . '/includes/header.php';
               <input type="hidden" name="action" value="rename">
               <input type="hidden" name="id" value="<?php echo (int)$cat['id']; ?>">
               <input type="hidden" name="csrf" value="<?php echo h($csrf); ?>">
-              <input type="text" name="name" value="<?php echo h($cat['name']); ?>" title="AZ" style="max-width:160px;">
+              <input type="text" name="name" value="<?php echo h($cat['name']); ?>" title="AZ" placeholder="AZ" style="max-width:160px; font-weight:600;">
               <input type="text" name="name_ru" value="<?php echo h($cat['name_ru'] ?? ''); ?>" title="RU" placeholder="RU" style="max-width:110px;">
               <input type="text" name="name_en" value="<?php echo h($cat['name_en'] ?? ''); ?>" title="EN" placeholder="EN" style="max-width:110px;">
               <button type="submit" class="btn btn-ghost btn-sm">Saxla</button>
