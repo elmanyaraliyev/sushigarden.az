@@ -88,27 +88,82 @@ require __DIR__ . '/includes/header.php';
     <label><input type="radio" name="sg_sound" value="chime"> Zəng (üçlü)</label>
     <label><input type="radio" name="sg_sound" value="beep1"> Bip (tək)</label>
     <label><input type="radio" name="sg_sound" value="beep2"> Bip (ikili)</label>
+    <label><input type="radio" name="sg_sound" value="custom"> Öz səsim</label>
     <label><input type="radio" name="sg_sound" value="none"> Səssiz</label>
   </div>
+  <div id="custom-sound-row" style="margin-top:.8rem; display:none;">
+    <input type="file" id="custom-sound-file" accept="audio/*">
+    <div style="margin-top:.4rem; font-size:.76rem; opacity:.6; max-width:360px; line-height:1.4;">
+      MP3/WAV/OGG fayl seçin (tövsiyə: 2-3 saniyəlik qısa səs, maks. 300 KB — brauzerin yaddaşında saxlanılır).
+    </div>
+    <div id="custom-sound-current" style="margin-top:.4rem; font-size:.8rem; color:var(--text-soft);"></div>
+  </div>
   <button type="button" class="btn btn-ghost btn-sm" id="sound-test" style="margin-top:1rem;">🔊 Sına</button>
+  <p style="color:var(--text-soft); font-size:.82rem; margin-top:1.2rem;">
+    Diqqət: başqa bir sekmədə/proqramda olarkən yeni sifariş gələndə brauzerinizdən icazə istənilə bilər
+    ("Bildiriş göndərməyə icazə verin?") — mütləq "İcazə ver" seçin ki, fon rejimində də bildiriş görünsün.
+  </p>
 </div>
 
 <script>
 (function(){
   var KEY = 'sg_admin_sound';
+  var CUSTOM_KEY = 'sg_admin_custom_sound';
   var radios = document.querySelectorAll('#sound-options input[type=radio]');
+  var customRow = document.getElementById('custom-sound-row');
+  var customFile = document.getElementById('custom-sound-file');
+  var customCurrent = document.getElementById('custom-sound-current');
   var current = 'chime';
   try { current = localStorage.getItem(KEY) || 'chime'; } catch (e) {}
   radios.forEach(function(r){ r.checked = (r.value === current); });
+
+  function syncCustomRow(){
+    customRow.style.display = (document.querySelector('#sound-options input[value="custom"]').checked) ? 'block' : 'none';
+    var hasCustom = false;
+    try { hasCustom = !!localStorage.getItem(CUSTOM_KEY); } catch (e) {}
+    customCurrent.textContent = hasCustom ? '✓ Öz səsiniz yaddadır.' : 'Hələ heç bir fayl yüklənməyib.';
+  }
+  syncCustomRow();
+
   radios.forEach(function(r){
     r.addEventListener('change', function(){
       try { localStorage.setItem(KEY, r.value); } catch (e) {}
+      syncCustomRow();
     });
   });
+
+  if (customFile) {
+    customFile.addEventListener('change', function(){
+      var file = customFile.files[0];
+      if (!file) return;
+      if (file.size > 350 * 1024) {
+        alert('Fayl çox böyükdür (maks. 300-350 KB). Daha qısa/kiçik həcmli səs seçin.');
+        customFile.value = '';
+        return;
+      }
+      var reader = new FileReader();
+      reader.onload = function(ev){
+        try {
+          localStorage.setItem(CUSTOM_KEY, ev.target.result);
+          localStorage.setItem(KEY, 'custom');
+          document.querySelector('#sound-options input[value="custom"]').checked = true;
+          syncCustomRow();
+        } catch (e) {
+          alert('Səs yaddaşa yazıla bilmədi (brauzer yaddaşı dola bilər). Daha kiçik fayl sınayın.');
+        }
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
   document.getElementById('sound-test').addEventListener('click', function(){
     var sel = document.querySelector('#sound-options input[type=radio]:checked');
     if (sel && window.sgPlayAdminSound) window.sgPlayAdminSound(sel.value);
   });
+
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission().catch(function(){});
+  }
 })();
 </script>
 

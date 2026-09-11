@@ -31,6 +31,18 @@
   }
   window.sgPlayAdminSound = function(name){
     if (name === 'none') return;
+    if (name === 'custom') {
+      try {
+        var data = localStorage.getItem('sg_admin_custom_sound');
+        if (data) {
+          var audio = new Audio(data);
+          audio.volume = 1;
+          audio.play().catch(function(){});
+          return;
+        }
+      } catch (e) {}
+      // ehtiyat variant: fayl tapılmasa defolt səs çalınsın
+    }
     if (name === 'beep2') { playTone([700, 700], 0.16); return; }
     if (name === 'chime') { playTone([523, 659, 784], 0.18); return; }
     playTone([880], 0.22); // 'beep1' (defolt)
@@ -40,6 +52,8 @@
   var toast = document.getElementById('sg-order-toast');
   var STORAGE_KEY = 'sg_admin_last_order_id';
   var SOUND_KEY = 'sg_admin_sound';
+  var originalTitle = document.title;
+  var titleFlashTimer = null;
 
   function getSound(){
     try { return localStorage.getItem(SOUND_KEY) || 'chime'; } catch (e) { return 'chime'; }
@@ -57,6 +71,49 @@
   }
   toast.addEventListener('click', function(){ window.location.href = 'orders.php'; });
 
+  function startTitleFlash(id){
+    stopTitleFlash();
+    var on = false;
+    titleFlashTimer = setInterval(function(){
+      document.title = on ? originalTitle : ('🔔 Yeni sifariş #' + id + '!');
+      on = !on;
+    }, 1000);
+  }
+  function stopTitleFlash(){
+    if (titleFlashTimer) { clearInterval(titleFlashTimer); titleFlashTimer = null; }
+    document.title = originalTitle;
+  }
+
+  // Başqa sekmədə/proqramda olarkən sifariş gələndə görünsün deyə OS bildirişi göstərir
+  // və sekmə başlığını yanıb-sönən edir — tab arxa planda olsa belə diqqət çəkmək üçün.
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission().catch(function(){});
+  }
+  function notifyNewOrder(id){
+    window.sgPlayAdminSound(getSound());
+    showToast(id);
+    if (document.hidden) {
+      startTitleFlash(id);
+      if ('Notification' in window && Notification.permission === 'granted') {
+        try {
+          var n = new Notification('🍣 Yeni sifariş — Sushi Garden', {
+            body: 'Sifariş #' + id + ' daxil oldu.',
+            icon: '../assets/logo-icon.jpg',
+            tag: 'sg-order-' + id
+          });
+          n.onclick = function(){ window.focus(); window.location.href = 'orders.php'; };
+        } catch (e) {}
+      }
+    }
+  }
+
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden) {
+      stopTitleFlash();
+      checkOrders(); // sekməyə qayıdan kimi dərhal yoxla, gecikmə olmasın
+    }
+  });
+
   var first = true;
   function checkOrders(){
     fetch('order-count.php', { credentials: 'same-origin' })
@@ -71,14 +128,13 @@
         }
         if (data.latest_id > last) {
           setLastId(data.latest_id);
-          window.sgPlayAdminSound(getSound());
-          showToast(data.latest_id);
+          notifyNewOrder(data.latest_id);
         }
       })
       .catch(function(){});
   }
   checkOrders();
-  setInterval(checkOrders, 20000);
+  setInterval(checkOrders, 15000);
 })();
 </script>
 </body>

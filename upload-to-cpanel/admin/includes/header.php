@@ -9,6 +9,7 @@ $sg_pendingOrders = (int)sg_db()->query("SELECT COUNT(*) FROM orders WHERE statu
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title><?php echo h($pageTitle ?? 'İdarəetmə Paneli'); ?> — Sushi Garden</title>
+<link rel="icon" href="../<?php echo h(sg_setting('logo_icon', 'assets/logo-icon.jpg')); ?>">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@600;700&family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="assets/admin.css?v=<?php echo (int)@filemtime(__DIR__ . '/../assets/admin.css'); ?>">
 </head>

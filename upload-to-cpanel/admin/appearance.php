@@ -131,6 +131,14 @@ if (!$siteUrl) {
     <button type="submit" class="btn btn-primary" style="margin-top:1rem;">Temanı tətbiq et</button>
   </form>
 </div>
+<script>
+document.querySelectorAll('.theme-swatch input[type="radio"]').forEach(function (r) {
+  r.addEventListener('change', function () {
+    document.querySelectorAll('.theme-swatch').forEach(function (s) { s.classList.remove('active'); });
+    r.closest('.theme-swatch').classList.add('active');
+  });
+});
+</script>
 
 <div class="panel" style="max-width:640px;">
   <div class="panel-head"><h2>Sayt linki (QR kod üçün)</h2></div>
