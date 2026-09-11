@@ -51,13 +51,13 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
 <title><?php echo $valid ? 'Sifariş #' . (int)$order['id'] : 'Sifariş tapılmadı'; ?> — <?php echo h($restaurantName); ?></title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="icon" href="<?php echo h(sg_favicon_url()); ?>" type="image/jpeg">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Playfair+Display:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css?v=<?php echo (int)@filemtime(__DIR__ . '/css/style.css'); ?>">
 <style>
   .track-wrap{max-width:640px; margin:0 auto; padding:70px 24px 90px;}
   .track-card{background:var(--bg-raised); border:1px solid var(--line); border-radius:16px; padding:2.2rem; box-shadow:var(--shadow);}
   .track-head{text-align:center; margin-bottom:2rem;}
-  .track-head .wordmark{display:inline-flex; align-items:center; gap:.6rem; font-family:'Cormorant Garamond',serif; font-size:1.2rem; font-weight:700; text-decoration:none; color:var(--text); margin-bottom:1.2rem;}
+  .track-head .wordmark{display:inline-flex; align-items:center; gap:.6rem; font-family:'Playfair Display',Georgia,serif; font-size:1.25rem; font-weight:800; text-decoration:none; color:var(--text); margin-bottom:1.2rem;}
   .track-head .brand-icon{width:34px; height:34px; border-radius:50%; object-fit:cover;}
   .track-order-no{font-family:'Cormorant Garamond',serif; font-size:1.8rem; font-weight:800;}
   .track-placed{color:var(--text-soft); font-size:.86rem; margin-top:.3rem;}

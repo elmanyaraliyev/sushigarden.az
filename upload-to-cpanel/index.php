@@ -90,7 +90,7 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="preload" as="image" href="<?php echo h($logoFullCustom ?: 'assets/logo-full.webp'); ?>" fetchpriority="high">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Playfair+Display:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css?v=<?php echo (int)@filemtime(__DIR__ . '/css/style.css'); ?>">
 <script type="application/ld+json"><?php echo json_encode($restaurantSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?></script>
 <script>document.documentElement.classList.add('js');</script>
@@ -113,6 +113,7 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
       <li><button type="button" data-tab="about" data-i18n="nav_about">Haqqımızda</button></li>
       <li><button type="button" data-tab="gallery" data-i18n="nav_gallery">Qalereya</button></li>
       <li><button type="button" data-tab="contact" data-i18n="nav_contact">Əlaqə</button></li>
+      <li class="nav-orders-item"><a href="track.php" class="my-orders-link">📦 <span data-i18n="my_orders">Sifarişim</span></a></li>
     </ul>
     <div class="lang-switch" id="lang-switch">
       <button type="button" class="lang-trigger" id="lang-trigger" aria-haspopup="true" aria-expanded="false">
@@ -135,7 +136,7 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
         </button>
       </div>
     </div>
-    <a class="nav-phone" id="my-orders-link" href="track.php">📦 <span data-i18n="my_orders">Sifarişim</span></a>
+    <a class="nav-phone my-orders-link nav-orders-desktop" href="track.php">📦 <span data-i18n="my_orders">Sifarişim</span></a>
     <a class="nav-phone" href="tel:+<?php echo h($phoneWa); ?>"><?php echo h($phoneDisplay); ?></a>
   </nav>
 </header>

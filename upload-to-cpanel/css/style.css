@@ -106,25 +106,29 @@ header{
 header.scrolled .nav{padding:11px 28px;}
 .wordmark{
   display:flex; align-items:center; gap:.7rem;
-  font-family:'Cormorant Garamond', serif; font-weight:700; font-size:1.25rem;
-  text-decoration:none;
+  font-family:'Playfair Display', Georgia, serif; font-weight:800; font-size:1.32rem;
+  letter-spacing:.01em; text-decoration:none;
 }
 .brand-icon{
   width:38px; height:38px; border-radius:50%;
   object-fit:cover; flex-shrink:0;
   box-shadow:0 0 0 1px var(--line);
 }
-.wordmark span{color:var(--accent); font-style:italic;}
+.wordmark span{color:var(--accent);}
 
 .nav-links{display:flex; gap:2.2rem; align-items:center; list-style:none; margin:0; padding:0;}
-.nav-links button{
+.nav-links button, .nav-links a{
   background:none; border:none; cursor:pointer; padding:.3rem 0; font-family:inherit;
   font-size:.78rem; font-weight:700; letter-spacing:.13em; text-transform:uppercase;
   color:var(--text); opacity:.82; border-bottom:1px solid transparent;
+  text-decoration:none; display:inline-block;
   transition:color .3s ease, opacity .3s ease, border-color .3s ease;
 }
-.nav-links button:hover{color:var(--gold); opacity:1;}
+.nav-links button:hover, .nav-links a:hover{color:var(--gold); opacity:1;}
 .nav-links button.active{color:var(--accent); opacity:1; border-bottom-color:var(--gold);}
+/* "Sifarişim" bu siyahıda YALNIZ mobil hamburger menyusunda görünür —
+   masaüstündə ayrıca .nav-orders-desktop pilli düymə ilə göstərilir. */
+.nav-orders-item{display:none;}
 
 .nav-phone{
   font-weight:600; font-variant-numeric:tabular-nums; font-size:.9rem;
@@ -178,10 +182,11 @@ header.scrolled .nav{padding:11px 28px;}
     transition:transform .18s ease, opacity .18s ease;
   }
   .nav-links.open{transform:translateY(0); opacity:1; pointer-events:auto;}
-  .nav-links button{width:100%; padding:.85rem 28px; text-align:left; border-bottom:1px solid var(--line); border-left:2px solid transparent;}
+  .nav-links button, .nav-links a{width:100%; padding:.85rem 28px; text-align:left; border-bottom:1px solid var(--line); border-left:2px solid transparent;}
   .nav-links button.active{border-left-color:var(--gold); border-bottom-color:var(--line);}
+  .nav-orders-item{display:block;}
   .nav-toggle{display:block;}
-  .nav-phone{display:none;}
+  .nav-orders-desktop, .nav-phone{display:none;}
   .lang-switch{margin-left:.5rem; margin-right:.5rem;}
 }
 

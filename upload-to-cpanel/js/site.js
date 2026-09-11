@@ -115,7 +115,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var navLinks = document.getElementById('nav-links');
   if (navToggle && navLinks) {
     navToggle.addEventListener('click', function () { navLinks.classList.toggle('open'); });
-    navLinks.querySelectorAll('button').forEach(function (b) {
+    navLinks.querySelectorAll('button, a').forEach(function (b) {
       b.addEventListener('click', function () { navLinks.classList.remove('open'); });
     });
   }
@@ -720,13 +720,14 @@ document.addEventListener('DOMContentLoaded', function () {
   // yoxdursa (başqa cihaz, keş silinib və s.) track.php-nin sifariş
   // nömrəsi+telefonla axtarış formasına yönləndirir.
   (function initMyOrdersLink() {
-    var link = document.getElementById('my-orders-link');
-    if (!link) return;
+    var links = document.querySelectorAll('.my-orders-link');
+    if (!links.length) return;
     try {
       var mine = JSON.parse(localStorage.getItem('sg_my_orders') || '[]');
       if (mine.length) {
         var last = mine[mine.length - 1];
-        link.href = 'track.php?id=' + last.id + '&t=' + last.t;
+        var href = 'track.php?id=' + last.id + '&t=' + last.t;
+        links.forEach(function (link) { link.href = href; });
       }
     } catch (e) {}
   })();
