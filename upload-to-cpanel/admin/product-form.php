@@ -44,7 +44,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $values['active'] = isset($_POST['active']) ? 1 : 0;
         $values['featured'] = isset($_POST['featured']) ? 1 : 0;
         $removeImage = isset($_POST['remove_image']);
-        $croppedImage = $_POST['cropped_image'] ?? '';
+        $uploadedPhoto = $_FILES['product_photo'] ?? null;
+        $photoUploadFailed = $uploadedPhoto && $uploadedPhoto['error'] !== UPLOAD_ERR_OK && $uploadedPhoto['error'] !== UPLOAD_ERR_NO_FILE;
+        if ($photoUploadFailed) {
+            $sizeErrors = [UPLOAD_ERR_INI_SIZE => 1, UPLOAD_ERR_FORM_SIZE => 1];
+            $errors[] = isset($sizeErrors[$uploadedPhoto['error']])
+                ? 'Şəkil çox böyükdür, server onu qəbul etmədi. Daha kiçik şəkil seçib yenidən cəhd edin.'
+                : 'Şəkil yüklənərkən xəta baş verdi, yenidən cəhd edin.';
+        }
 
         if ($values['category_id'] <= 0) $errors[] = 'Kateqoriya seçin.';
         if ($values['name'] === '') $errors[] = 'Məhsul adı boş ola bilməz.';
@@ -57,8 +64,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if (!$errors) {
             $imageFilename = $product['image'] ?? null;
 
-            if ($croppedImage) {
-                $newFile = sg_save_cropped_image($croppedImage);
+            if ($uploadedPhoto && $uploadedPhoto['error'] === UPLOAD_ERR_OK) {
+                $newFile = sg_save_product_photo($uploadedPhoto);
                 if ($newFile) {
                     if ($imageFilename) sg_delete_product_image($imageFilename);
                     $imageFilename = $newFile;
@@ -110,7 +117,7 @@ require __DIR__ . '/includes/header.php';
 
   <form method="post" enctype="multipart/form-data" id="product-form">
     <input type="hidden" name="csrf" value="<?php echo h($csrf); ?>">
-    <input type="hidden" name="cropped_image" id="cropped_image" value="">
+    <input type="file" name="product_photo" id="cropped_image" style="display:none;">
 
     <div class="form-grid full">
       <div class="field">
@@ -229,18 +236,26 @@ require __DIR__ . '/includes/header.php';
   var imageInput = document.getElementById('image-input');
   var cropperWrap = document.getElementById('cropper-wrap');
   var cropTarget = document.getElementById('crop-target');
-  var croppedField = document.getElementById('cropped_image');
+  var photoField = document.getElementById('cropped_image'); // real <input type="file">, göndərilir
   var currentImage = document.getElementById('current-image');
   var removeCheckbox = document.getElementById('remove_image');
   var cropper = null;
 
-  function setPreview(dataUrl){
-    croppedField.value = dataUrl;
+  // Şəkli əsl fayl kimi (base64 mətn sahəsi kimi YOX — bəzi hostinqlərin
+  // ModSecurity/WAF qaydaları çox uzun base64 sahələrini səssizcə atır)
+  // gizli file input-a qoyuruq ki, form normal multipart faylı kimi göndərsin.
+  function setPreviewFromBlob(blob){
+    var file = new File([blob], 'product-photo.jpg', { type: 'image/jpeg' });
+    var dt = new DataTransfer();
+    dt.items.add(file);
+    photoField.files = dt.files;
+
+    var url = URL.createObjectURL(blob);
     if (currentImage.tagName === 'IMG') {
-      currentImage.src = dataUrl;
+      currentImage.src = url;
     } else {
       var img = document.createElement('img');
-      img.src = dataUrl;
+      img.src = url;
       img.className = 'img-preview';
       img.id = 'current-image';
       currentImage.replaceWith(img);
@@ -252,7 +267,7 @@ require __DIR__ . '/includes/header.php';
   // Kropper (CDN) yüklənməsə belə, şəkli HƏMİŞƏ canvas ilə kiçildib göndəririk —
   // əks halda telefon şəklinin əsl ölçüsü (8-12 MB) serverin qəbul limitini aşıb
   // BÜTÜN FORMU sıradan çıxarır (heç bir sahə saxlanılmır, qəribə "köhnəlib" xətası çıxır).
-  function resizeToDataUrl(srcDataUrl, maxDim, cb){
+  function resizeToBlob(srcDataUrl, maxDim, cb){
     var img = new Image();
     img.onload = function(){
       var w = img.naturalWidth, h = img.naturalHeight;
@@ -263,7 +278,7 @@ require __DIR__ . '/includes/header.php';
       var canvas = document.createElement('canvas');
       canvas.width = w; canvas.height = h;
       canvas.getContext('2d').drawImage(img, 0, 0, w, h);
-      cb(canvas.toDataURL('image/jpeg', 0.85));
+      canvas.toBlob(cb, 'image/jpeg', 0.85);
     };
     img.src = srcDataUrl;
   }
@@ -279,7 +294,7 @@ require __DIR__ . '/includes/header.php';
     var reader = new FileReader();
     reader.onload = function(ev){
       if (window.__cropperFailed || typeof Cropper === 'undefined') {
-        resizeToDataUrl(ev.target.result, 900, setPreview);
+        resizeToBlob(ev.target.result, 900, setPreviewFromBlob);
         return;
       }
       cropTarget.src = ev.target.result;
@@ -312,7 +327,7 @@ require __DIR__ . '/includes/header.php';
     if (!cropper) return;
     var outW = 900, outH = Math.round(outW / currentRatio);
     var canvas = cropper.getCroppedCanvas({ width: outW, height: outH });
-    setPreview(canvas.toDataURL('image/jpeg', 0.9));
+    canvas.toBlob(function(blob){ setPreviewFromBlob(blob); }, 'image/jpeg', 0.9);
     cropperWrap.style.display = 'none';
     cropper.destroy();
     cropper = null;

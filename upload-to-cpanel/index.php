@@ -23,17 +23,65 @@ $logoFullCustom = sg_setting('logo_full', '');
 $heroImage = sg_setting('hero_image', '');
 
 $csrf = sg_csrf_token();
+
+/* ---------------------------------------------------------------------
+ * SEO: başlıq/təsvir, Open Graph, kanonik URL və Restaurant strukturlaşdırılmış
+ * datası (JSON-LD) — Google/Yandex/Bing-in restoranı düzgün anlaması üçün.
+ * ------------------------------------------------------------------- */
+$siteUrl = 'https://sushigarden.az/';
+$seoTitle = $restaurantName . ' — Bakıda Suşi Restoranı | Onlayn Sifariş və Çatdırılma';
+$seoDescription = $restaurantName . ' — Bakıda təzə suşi, sushi roll, hot roll, burrito və noodles. '
+    . $restaurantTagline . ' Onlayn sifariş, sürətli çatdırılma, özü aparma və restoranda yemək seçimi.';
+$ogImagePath = $logoFullCustom ?: 'assets/logo-full.jpg';
+$ogImageUrl = $siteUrl . ltrim($ogImagePath, '/');
+
+$dayToSchema = ['mon' => 'Monday', 'tue' => 'Tuesday', 'wed' => 'Wednesday', 'thu' => 'Thursday', 'fri' => 'Friday', 'sat' => 'Saturday', 'sun' => 'Sunday'];
+$openingHours = [];
+foreach ($dayToSchema as $key => $schemaDay) {
+    $d = $hours[$key] ?? null;
+    if ($d && empty($d['closed']) && !empty($d['open']) && !empty($d['close'])) {
+        $openingHours[] = ['@type' => 'OpeningHoursSpecification', 'dayOfWeek' => $schemaDay, 'opens' => $d['open'], 'closes' => $d['close']];
+    }
+}
+$sameAs = array_values(array_filter([$igUrl, $fbUrl, $ttUrl, $phoneWa ? 'https://wa.me/' . $phoneWa : '']));
+
+$restaurantSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'Restaurant',
+    'name' => $restaurantName,
+    'image' => $ogImageUrl,
+    'url' => $siteUrl,
+    '@id' => $siteUrl,
+    'servesCuisine' => ['Japanese', 'Sushi', 'Asian Fusion'],
+    'priceRange' => '₼₼',
+    'telephone' => $phoneDisplay ?: ('+' . $phoneWa),
+    'address' => ['@type' => 'PostalAddress', 'streetAddress' => $address, 'addressLocality' => 'Bakı', 'addressCountry' => 'AZ'],
+];
+if ($openingHours) $restaurantSchema['openingHoursSpecification'] = $openingHours;
+if ($sameAs) $restaurantSchema['sameAs'] = $sameAs;
+if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
 ?>
 <!doctype html>
 <html lang="az">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title><?php echo h($restaurantName); ?> — Bakı</title>
-<meta name="description" content="<?php echo h($restaurantName); ?> — <?php echo h($restaurantTagline); ?> Menyu, ünvan və onlayn sifariş.">
-<meta property="og:title" content="<?php echo h($restaurantName); ?> — Bakı">
-<meta property="og:description" content="<?php echo h($restaurantTagline); ?>">
+<title><?php echo h($seoTitle); ?></title>
+<meta name="description" content="<?php echo h($seoDescription); ?>">
+<meta name="keywords" content="sushi, sushi garden, suşi bakı, sushi baku, sushi sifarişi, sushi çatdırılma, yapon mətbəxi bakı, sushi roll, hot roll, sushi bar">
+<link rel="canonical" href="<?php echo h($siteUrl); ?>">
+<meta property="og:title" content="<?php echo h($seoTitle); ?>">
+<meta property="og:description" content="<?php echo h($seoDescription); ?>">
 <meta property="og:type" content="restaurant.menu">
+<meta property="og:url" content="<?php echo h($siteUrl); ?>">
+<meta property="og:image" content="<?php echo h($ogImageUrl); ?>">
+<meta property="og:locale" content="az_AZ">
+<meta property="og:site_name" content="<?php echo h($restaurantName); ?>">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="<?php echo h($seoTitle); ?>">
+<meta name="twitter:description" content="<?php echo h($seoDescription); ?>">
+<meta name="twitter:image" content="<?php echo h($ogImageUrl); ?>">
+<meta name="robots" content="index, follow">
 <meta name="theme-color" content="#12261A">
 <link rel="icon" href="<?php echo h($logoIconCustom ?: 'assets/logo-icon.jpg'); ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -41,6 +89,7 @@ $csrf = sg_csrf_token();
 <link rel="preload" as="image" href="<?php echo h($logoFullCustom ?: 'assets/logo-full.webp'); ?>" fetchpriority="high">
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800;900&family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css?v=<?php echo (int)@filemtime(__DIR__ . '/css/style.css'); ?>">
+<script type="application/ld+json"><?php echo json_encode($restaurantSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?></script>
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body data-wa-phone="<?php echo h($phoneWa); ?>" data-csrf="<?php echo h($csrf); ?>">
@@ -88,6 +137,7 @@ $csrf = sg_csrf_token();
 </header>
 
 <main id="top">
+  <h1 class="sr-only">Sushi Garden — Bakıda Suşi Restoranı: Onlayn Sifariş, Sushi Roll, Hot Roll və Çatdırılma</h1>
   <div class="stage">
 
     <section class="panel active" id="panel-menu" data-panel="menu">
@@ -189,7 +239,7 @@ $csrf = sg_csrf_token();
         <div class="wrap about-hero">
           <div class="reveal">
             <p class="eyebrow" data-i18n="about_eyebrow">Haqqımızda</p>
-            <h1>Sushi Garden: <em>Where Art Meets Nature</em></h1>
+            <h2>Sushi Garden: <em>Where Art Meets Nature</em></h2>
             <p data-i18n="about_subtext">Bakının mərkəzində əl işi suşi təcrübəsi — təbii materiallar, yapon dəqiqliyi və səmimi qonaqpərvərliklə hər gün yenidən hazırlanır.</p>
           </div>
           <div class="about-logo reveal">

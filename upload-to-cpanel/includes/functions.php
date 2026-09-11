@@ -119,17 +119,17 @@ function sg_next_sort_order($table, $categoryId = null) {
 }
 
 /**
- * Base64 (data URL) şəklini serverdə saxlayır: JPEG-ə çevirir, uyğun
- * ölçüyə salır (maks. en 900px) və /uploads/products qovluğuna yazır.
- * Uğurlu olarsa fayl adını, olmazsa null qaytarır.
+ * Kəsilmiş məhsul fotosunu (əsl multipart fayl yükləməsi kimi göndərilir —
+ * base64 mətn sahəsi kimi DEYİL, çünki bəzi hostinqlərin ModSecurity/WAF
+ * qaydaları çox uzun base64 mətn sahələrini sadəcə susaraq atır) serverdə
+ * saxlayır: JPEG-ə çevirir, uyğun ölçüyə salır (maks. en 900px) və
+ * /uploads/products qovluğuna yazır. Uğurlu olarsa fayl adını, olmazsa null qaytarır.
  */
-function sg_save_cropped_image($dataUrl) {
-    if (strpos($dataUrl, 'data:image') !== 0) {
+function sg_save_product_photo($fileArray) {
+    if (empty($fileArray) || !isset($fileArray['tmp_name']) || $fileArray['error'] !== UPLOAD_ERR_OK) {
         return null;
     }
-    $comma = strpos($dataUrl, ',');
-    if ($comma === false) return null;
-    $binary = base64_decode(substr($dataUrl, $comma + 1));
+    $binary = @file_get_contents($fileArray['tmp_name']);
     if ($binary === false || strlen($binary) < 10) return null;
 
     if (!sg_ensure_writable_dir(SG_UPLOADS_DIR)) {
