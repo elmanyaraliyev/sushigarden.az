@@ -133,7 +133,7 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
         </button>
       </div>
     </div>
-    <a class="nav-phone" id="my-orders-link" href="#" style="display:none;">📦 <span data-i18n="my_orders">Sifarişim</span></a>
+    <a class="nav-phone" id="my-orders-link" href="track.php">📦 <span data-i18n="my_orders">Sifarişim</span></a>
     <a class="nav-phone" href="tel:+<?php echo h($phoneWa); ?>"><?php echo h($phoneDisplay); ?></a>
   </nav>
 </header>

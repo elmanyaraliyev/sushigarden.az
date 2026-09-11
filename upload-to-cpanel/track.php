@@ -11,6 +11,23 @@ $token = (string)($_GET['t'] ?? '');
 $order = ($id > 0 && $token !== '') ? sg_get_order($id) : null;
 $valid = $order && !empty($order['track_token']) && hash_equals($order['track_token'], $token);
 
+// Link/localStorage itirilibsə, müştəri sifariş nömrəsi + telefonla özü tapa bilsin.
+$lookupError = '';
+if (!$valid && $_SERVER['REQUEST_METHOD'] === 'POST') {
+    $lookupId = (int)($_POST['order_id'] ?? 0);
+    $lookupPhone = preg_replace('/\D+/', '', (string)($_POST['phone'] ?? ''));
+    $lookupOrder = $lookupId > 0 ? sg_get_order($lookupId) : null;
+    if ($lookupOrder) {
+        $storedDigits = preg_replace('/\D+/', '', (string)$lookupOrder['customer_phone']);
+        // son 9 rəqəmi tutuşduraraq müqayisə et (ölkə kodu/aparıcı sıfır fərqlərini nəzərə almadan)
+        if (substr($storedDigits, -9) === substr($lookupPhone, -9) && strlen($lookupPhone) >= 9) {
+            header('Location: track.php?id=' . $lookupOrder['id'] . '&t=' . $lookupOrder['track_token']);
+            exit;
+        }
+    }
+    $lookupError = 'Sifariş tapılmadı. Sifariş nömrəsini və sifariş zamanı yazdığınız telefon nömrəsini yoxlayın.';
+}
+
 $steps = [
     'pending' => ['label' => 'Qəbul edildi', 'icon' => '📥'],
     'preparing' => ['label' => 'Hazırlanır', 'icon' => '👨‍🍳'],
@@ -80,9 +97,23 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
     <?php if (!$valid): ?>
       <div class="track-error">
         <p style="font-size:2.4rem; margin-bottom:.6rem;">🔍</p>
-        <h2 style="font-family:'Playfair Display',serif;">Sifariş tapılmadı</h2>
-        <p style="color:var(--text-soft); margin-top:.6rem;">Link düzgün deyil və ya sifariş artıq mövcud deyil.</p>
-        <a href="index.php" class="btn btn-primary" style="margin-top:1.4rem; display:inline-flex;">Menyuya qayıt</a>
+        <h2 style="font-family:'Playfair Display',serif;">Sifarişinizi tapın</h2>
+        <p style="color:var(--text-soft); margin-top:.6rem;">Sifariş nömrənizi və sifariş zamanı yazdığınız telefon nömrənizi daxil edin.</p>
+      </div>
+      <?php if ($lookupError): ?><div class="order-error" style="margin-bottom:1rem;"><?php echo h($lookupError); ?></div><?php endif; ?>
+      <form method="post" style="display:flex; flex-direction:column; gap:.9rem; max-width:340px; margin:0 auto;">
+        <div class="field-block" style="margin-bottom:0;">
+          <label>Sifariş nömrəsi</label>
+          <input type="text" name="order_id" inputmode="numeric" placeholder="məs. 10" required>
+        </div>
+        <div class="field-block" style="margin-bottom:0;">
+          <label>Telefon nömrəniz</label>
+          <input type="tel" name="phone" placeholder="050 123 45 67" required>
+        </div>
+        <button type="submit" class="btn btn-primary" style="justify-content:center;">Sifarişi tap</button>
+      </form>
+      <div style="text-align:center; margin-top:1.4rem;">
+        <a href="index.php" class="btn btn-ghost" style="display:inline-flex;">Menyuya qayıt</a>
       </div>
     <?php else: ?>
       <div style="text-align:center;">

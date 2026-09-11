@@ -716,7 +716,9 @@ document.addEventListener('DOMContentLoaded', function () {
 
   render();
 
-  // "Sifarişim" keçidi — əvvəllər bu brauzerdən verilmiş sifariş varsa göstərilir
+  // "Sifarişim" keçidi — bu brauzerdən son verilmiş sifarişə birbaşa aparır;
+  // yoxdursa (başqa cihaz, keş silinib və s.) track.php-nin sifariş
+  // nömrəsi+telefonla axtarış formasına yönləndirir.
   (function initMyOrdersLink() {
     var link = document.getElementById('my-orders-link');
     if (!link) return;
@@ -725,7 +727,6 @@ document.addEventListener('DOMContentLoaded', function () {
       if (mine.length) {
         var last = mine[mine.length - 1];
         link.href = 'track.php?id=' + last.id + '&t=' + last.t;
-        link.style.display = 'inline-flex';
       }
     } catch (e) {}
   })();
