@@ -1,23 +1,18 @@
 var SG_STRINGS = {
   az: {
-    nav_menu: 'Menyu', nav_philosophy: 'Fəlsəfəmiz', nav_contact: 'Əlaqə',
-    hero_eyebrow: 'Bakı · Yapon mətbəxi',
-    hero_title: 'Bakının qəlbində<br><em>təzə suşi</em> bağı',
-    hero_cta_menu: 'Menyuya bax', hero_cta_wa: 'WhatsApp ilə sifariş',
-    hero_fact_items: 'menyu seçimi', hero_fact_hours: 'hər gün açıq', hero_fact_wa: 'ilə sürətli sifariş',
-    hero_tag: 'Əl işi · Gündəlik təzə',
+    nav_menu: 'Menyu', nav_about: 'Haqqımızda', nav_gallery: 'Qalereya', nav_contact: 'Əlaqə',
+    about_eyebrow: 'Haqqımızda',
+    about_subtext: 'Bakının mərkəzində əl işi suşi təcrübəsi — təbii materiallar, yapon dəqiqliyi və səmimi qonaqpərvərliklə hər gün yenidən hazırlanır.',
+    about_concept_eyebrow: 'Fəlsəfəmiz', about_concept_title: 'Bağ Konsepsiyamız',
+    about_concept_p1: 'Sushi Garden bir restorandan çox — canlı bir bağdır. Hər boşqab təbiətin sadəliyini, hər dad isə ustaların səbrini əks etdirir.',
+    about_concept_p2: 'Təzə balıq hər səhər tədarük olunur, düyü əl ilə hazırlanır, tərəvəzlər isə mövsümə uyğun seçilir — sürətli qidalanma deyil, yavaş və düşünülmüş bir sənət.',
+    gallery_eyebrow: 'Qalereya', gallery_title: 'Təbiətdən İlhamlanan Anlar', gallery_tag: 'Sushi Garden',
     featured_eyebrow: 'Seçmə', featured_title: 'Tövsiyə olunanlar', badge_featured: 'Tövsiyə', add_to_cart: 'Səbətə əlavə et',
-    phil1_title: 'Gündəlik təzəlik',
-    phil1_text: 'Balıq hər səhər tədarük olunur — heç nə dondurulmadan saxlanmır, heç nə növbəti günə saxlanmır.',
-    phil2_title: 'Əl işi ustalıq',
-    phil2_text: 'Hər rulon və nigiri aşpazlarımızın əli ilə, sifariş anında, gözünüzün qarşısında hazırlanır.',
-    phil3_title: 'Bağ sakitliyi',
     menu_eyebrow: 'Menyu', menu_title: 'Fəsil seçimləri', menu_tab_all: 'Hamısı',
-    contact_eyebrow: 'Əlaqə', contact_title: 'Bizi tapın',
+    contact_eyebrow: 'Əlaqə', contact_title: 'Bizi Tapın',
     contact_address: 'Ünvan', contact_maps_link: 'Google Maps-da bax', contact_phone: 'Telefon',
     hours_closed: 'İstirahət günü',
     contact_map_open: 'Google Maps-da aç', contact_map_route: 'Marşrutu almaq üçün klikləyin',
-    footer_nav_title: 'Naviqasiya', footer_contact_title: 'Əlaqə', back_to_top: '↑ Yuxarı',
     cart_pill_label: 'Sifariş', cart_title: 'Sifarişiniz',
     cart_empty: 'Hələ heç nə seçilməyib. Menyudan "+" düyməsinə basaraq əlavə edin.',
     tip_label: 'Bəxşiş', tip_none: 'Bəxşişsiz', tip_custom: 'Digər məbləğ',
@@ -33,24 +28,19 @@ var SG_STRINGS = {
     toast_added: 'səbətə əlavə olundu'
   },
   ru: {
-    nav_menu: 'Меню', nav_philosophy: 'Наша философия', nav_contact: 'Контакты',
-    hero_eyebrow: 'Баку · Японская кухня',
-    hero_title: 'Сад свежих суши<br>в <em>сердце</em> Баку',
-    hero_cta_menu: 'Смотреть меню', hero_cta_wa: 'Заказать через WhatsApp',
-    hero_fact_items: 'позиций меню', hero_fact_hours: 'открыто каждый день', hero_fact_wa: 'быстрый заказ',
-    hero_tag: 'Ручная работа · Свежесть каждый день',
+    nav_menu: 'Меню', nav_about: 'О нас', nav_gallery: 'Галерея', nav_contact: 'Контакты',
+    about_eyebrow: 'О нас',
+    about_subtext: 'В центре Баку — суши ручной работы: натуральные ингредиенты, японская точность и искреннее гостеприимство каждый день.',
+    about_concept_eyebrow: 'Наша философия', about_concept_title: 'Концепция нашего сада',
+    about_concept_p1: 'Sushi Garden — больше, чем ресторан, это живой сад. Каждое блюдо отражает простоту природы, а каждый вкус — терпение мастера.',
+    about_concept_p2: 'Свежая рыба поставляется каждое утро, рис готовится вручную, а овощи подбираются по сезону — это не быстрая еда, а медленное, продуманное искусство.',
+    gallery_eyebrow: 'Галерея', gallery_title: 'Моменты, вдохновлённые природой', gallery_tag: 'Sushi Garden',
     featured_eyebrow: 'Подборка', featured_title: 'Рекомендуем', badge_featured: 'Рекомендуем', add_to_cart: 'Добавить в корзину',
-    phil1_title: 'Свежесть каждый день',
-    phil1_text: 'Рыба поставляется каждое утро — ничего не замораживается и не хранится до следующего дня.',
-    phil2_title: 'Мастерство вручную',
-    phil2_text: 'Каждый ролл и нигири готовятся руками наших поваров в момент заказа, у вас на глазах.',
-    phil3_title: 'Тишина сада',
     menu_eyebrow: 'Меню', menu_title: 'Сезонный выбор', menu_tab_all: 'Все',
     contact_eyebrow: 'Контакты', contact_title: 'Найдите нас',
     contact_address: 'Адрес', contact_maps_link: 'Смотреть на Google Maps', contact_phone: 'Телефон',
     hours_closed: 'Выходной',
     contact_map_open: 'Открыть в Google Maps', contact_map_route: 'Нажмите, чтобы построить маршрут',
-    footer_nav_title: 'Навигация', footer_contact_title: 'Контакты', back_to_top: '↑ Наверх',
     cart_pill_label: 'Заказ', cart_title: 'Ваш заказ',
     cart_empty: 'Пока ничего не выбрано. Добавьте из меню, нажав «+».',
     tip_label: 'Чаевые', tip_none: 'Без чаевых', tip_custom: 'Другая сумма',
@@ -66,24 +56,19 @@ var SG_STRINGS = {
     toast_added: 'добавлено в корзину'
   },
   en: {
-    nav_menu: 'Menu', nav_philosophy: 'Our Philosophy', nav_contact: 'Contact',
-    hero_eyebrow: 'Baku · Japanese Cuisine',
-    hero_title: 'A garden of<br><em>fresh sushi</em> in the heart of Baku',
-    hero_cta_menu: 'View Menu', hero_cta_wa: 'Order via WhatsApp',
-    hero_fact_items: 'menu items', hero_fact_hours: 'open daily', hero_fact_wa: 'for quick ordering',
-    hero_tag: 'Handmade · Fresh Daily',
+    nav_menu: 'Menu', nav_about: 'About Us', nav_gallery: 'Gallery', nav_contact: 'Contact',
+    about_eyebrow: 'About Us',
+    about_subtext: 'In the heart of Baku, a handcrafted sushi experience — natural ingredients, Japanese precision, and genuine hospitality, made fresh every day.',
+    about_concept_eyebrow: 'Our Philosophy', about_concept_title: 'Our Garden Concept',
+    about_concept_p1: 'Sushi Garden is more than a restaurant — it is a living garden. Every plate reflects the simplicity of nature, and every flavor the patience of a craftsman.',
+    about_concept_p2: 'Fresh fish arrives every morning, rice is prepared by hand, and vegetables are chosen by season — not fast food, but a slow, considered art.',
+    gallery_eyebrow: 'Gallery', gallery_title: 'Moments Inspired by Nature', gallery_tag: 'Sushi Garden',
     featured_eyebrow: 'Selection', featured_title: 'Recommended', badge_featured: 'Featured', add_to_cart: 'Add to Cart',
-    phil1_title: 'Daily Freshness',
-    phil1_text: 'Fish is delivered every morning — nothing is frozen or kept for the next day.',
-    phil2_title: 'Handcrafted Mastery',
-    phil2_text: 'Every roll and nigiri is made by hand by our chefs, right when you order, before your eyes.',
-    phil3_title: 'Garden Serenity',
     menu_eyebrow: 'Menu', menu_title: 'Seasonal Selections', menu_tab_all: 'All',
     contact_eyebrow: 'Contact', contact_title: 'Find Us',
     contact_address: 'Address', contact_maps_link: 'View on Google Maps', contact_phone: 'Phone',
     hours_closed: 'Day off',
     contact_map_open: 'Open in Google Maps', contact_map_route: 'Click to get directions',
-    footer_nav_title: 'Navigation', footer_contact_title: 'Contact', back_to_top: '↑ Top',
     cart_pill_label: 'Order', cart_title: 'Your Order',
     cart_empty: 'Nothing selected yet. Add items from the menu using "+".',
     tip_label: 'Tip', tip_none: 'No tip', tip_custom: 'Custom amount',
@@ -109,10 +94,44 @@ document.addEventListener('DOMContentLoaded', function () {
   var navLinks = document.getElementById('nav-links');
   if (navToggle && navLinks) {
     navToggle.addEventListener('click', function () { navLinks.classList.toggle('open'); });
-    navLinks.querySelectorAll('a').forEach(function (a) {
-      a.addEventListener('click', function () { navLinks.classList.remove('open'); });
+    navLinks.querySelectorAll('button').forEach(function (b) {
+      b.addEventListener('click', function () { navLinks.classList.remove('open'); });
     });
   }
+
+  /* ------------------------------------------------------------------
+   * Menu / About Us / Gallery / Contact — tab paneli. Klik olunanda
+   * səhifə sürüşmür, seçilmiş panel gizlədilib yenisi fade-in olunur.
+   * ---------------------------------------------------------------- */
+  (function initTabs() {
+    var panels = document.querySelectorAll('.panel');
+    var navBtns = document.querySelectorAll('[data-tab]');
+    if (!panels.length) return;
+
+    function switchTab(tab) {
+      panels.forEach(function (p) {
+        var isTarget = p.getAttribute('data-panel') === tab;
+        p.classList.toggle('active', isTarget);
+        if (isTarget) {
+          p.querySelectorAll('.reveal:not(.in-view)').forEach(function (el) { el.classList.add('in-view'); });
+        }
+      });
+      navBtns.forEach(function (b) {
+        b.classList.toggle('active', b.getAttribute('data-tab') === tab);
+      });
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+
+    navBtns.forEach(function (b) {
+      b.addEventListener('click', function () { switchTab(b.getAttribute('data-tab')); });
+    });
+    document.querySelectorAll('[data-tab-link]').forEach(function (el) {
+      el.addEventListener('click', function (e) {
+        e.preventDefault();
+        switchTab(el.getAttribute('data-tab-link'));
+      });
+    });
+  })();
 
   // header — subtle shrink + shadow once the page has scrolled a bit
   var header = document.querySelector('header');

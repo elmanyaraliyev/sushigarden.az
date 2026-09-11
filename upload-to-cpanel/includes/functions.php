@@ -182,6 +182,13 @@ function sg_ensure_writable_dir($dir) {
     if (is_dir($dir) && !is_writable($dir)) {
         @chmod($dir, 0755);
     }
+    if (is_dir($dir) && !is_writable($dir)) {
+        // Bəzi paylaşılan hostinqlərdə (PHP prosesinin sahibliyi fərqli olanda) 0755 kifayət etmir.
+        @chmod($dir, 0775);
+    }
+    if (is_dir($dir) && !is_writable($dir)) {
+        @chmod($dir, 0777);
+    }
     return is_dir($dir) && is_writable($dir);
 }
 

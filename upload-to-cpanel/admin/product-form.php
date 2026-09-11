@@ -124,7 +124,8 @@ require __DIR__ . '/includes/header.php';
           <div>
             <input type="file" id="image-input" accept="image/*">
             <div style="margin-top:.4rem; font-size:.76rem; opacity:.55; max-width:280px; line-height:1.4;">
-              Tövsiyə: kvadrat şəkil, minimum 700×700px, JPG və ya PNG formatında, maksimum 20 MB (avtomatik kiçildilir).
+              Tövsiyə: kvadrat (1:1) və ya üfüqi (16:9) şəkil, minimum 700px en, JPG və ya PNG formatında,
+              maksimum 20 MB (avtomatik kiçildilir). Şəkil seçəndən sonra kəsmə pəncərəsində formatı seçə bilərsiniz.
             </div>
             <?php if (!empty($product['image'])): ?>
               <div style="margin-top:.5rem;">
@@ -137,6 +138,10 @@ require __DIR__ . '/includes/header.php';
         </div>
         <div id="cropper-wrap" style="display:none;">
           <div class="crop-area"><img id="crop-target" src="" style="max-width:100%;"></div>
+          <div style="display:flex; gap:.5rem; margin-bottom:.6rem;">
+            <button type="button" class="btn btn-ghost btn-sm crop-ratio active" data-ratio="1">◻ Kvadrat (1:1)</button>
+            <button type="button" class="btn btn-ghost btn-sm crop-ratio" data-ratio="1.7778">▭ Üfüqi (16:9)</button>
+          </div>
           <button type="button" class="btn btn-ghost btn-sm" id="crop-confirm">✓ Şəkli kəs və təsdiqlə</button>
           <button type="button" class="btn btn-ghost btn-sm" id="crop-cancel">Ləğv et</button>
         </div>
@@ -280,6 +285,8 @@ require __DIR__ . '/includes/header.php';
       cropTarget.src = ev.target.result;
       cropperWrap.style.display = 'block';
       if (cropper) cropper.destroy();
+      currentRatio = 1;
+      ratioBtns.forEach(function(b){ b.classList.toggle('active', b.getAttribute('data-ratio') === '1'); });
       cropper = new Cropper(cropTarget, {
         aspectRatio: 1,
         viewMode: 1,
@@ -290,9 +297,21 @@ require __DIR__ . '/includes/header.php';
     reader.readAsDataURL(file);
   });
 
+  var currentRatio = 1;
+  var ratioBtns = document.querySelectorAll('.crop-ratio');
+  ratioBtns.forEach(function(btn){
+    btn.addEventListener('click', function(){
+      if (!cropper) return;
+      currentRatio = parseFloat(btn.getAttribute('data-ratio'));
+      cropper.setAspectRatio(currentRatio);
+      ratioBtns.forEach(function(b){ b.classList.toggle('active', b === btn); });
+    });
+  });
+
   document.getElementById('crop-confirm').addEventListener('click', function(){
     if (!cropper) return;
-    var canvas = cropper.getCroppedCanvas({ width: 700, height: 700 });
+    var outW = 900, outH = Math.round(outW / currentRatio);
+    var canvas = cropper.getCroppedCanvas({ width: outW, height: outH });
     setPreview(canvas.toDataURL('image/jpeg', 0.9));
     cropperWrap.style.display = 'none';
     cropper.destroy();
