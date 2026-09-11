@@ -103,6 +103,18 @@ var SG_STRINGS = {
   }
 };
 
+// Səbət və ya məhsul pəncərəsi açıq olanda arxa fondakı əsas səhifənin
+// scroll olunmasının qarşısını alır (ikisi eyni anda açıla bilər deyə sayğacla).
+var sgScrollLockCount = 0;
+function sgLockScroll() {
+  sgScrollLockCount++;
+  document.documentElement.classList.add('sg-scroll-lock');
+}
+function sgUnlockScroll() {
+  sgScrollLockCount = Math.max(0, sgScrollLockCount - 1);
+  if (sgScrollLockCount === 0) document.documentElement.classList.remove('sg-scroll-lock');
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   var currentYear = new Date().getFullYear();
   var yearEl = document.getElementById('year');
@@ -644,8 +656,8 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  function openDrawer() { drawer.classList.add('open'); overlay.classList.add('open'); }
-  function closeDrawer() { drawer.classList.remove('open'); overlay.classList.remove('open'); }
+  function openDrawer() { drawer.classList.add('open'); overlay.classList.add('open'); sgLockScroll(); }
+  function closeDrawer() { drawer.classList.remove('open'); overlay.classList.remove('open'); sgUnlockScroll(); }
   pill.addEventListener('click', openDrawer);
   document.getElementById('drawer-close').addEventListener('click', closeDrawer);
   overlay.addEventListener('click', closeDrawer);
@@ -709,10 +721,13 @@ document.addEventListener('DOMContentLoaded', function () {
       triggerBtn = item.querySelector('.add, .js-add-to-cart');
       modal.classList.add('open');
       modal.setAttribute('aria-hidden', 'false');
+      sgLockScroll();
     }
     function closeModal() {
+      if (!modal.classList.contains('open')) return;
       modal.classList.remove('open');
       modal.setAttribute('aria-hidden', 'true');
+      sgUnlockScroll();
     }
 
     document.querySelectorAll('.menu-item, .carousel-slide').forEach(function (item) {

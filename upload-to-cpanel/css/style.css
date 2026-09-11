@@ -42,6 +42,12 @@
   --forest:#A23930; --gold:#D98B60; --ink:#F5EBE6; --line:rgba(245,235,230,.14);
 }
 
+/* Səbət/məhsul pəncərəsi açıq olanda arxa fondakı səhifənin scroll olunmasının
+   qarşısını alır (JS bu class-ı <html>-ə əlavə/silir). */
+html.sg-scroll-lock, html.sg-scroll-lock body{
+  overflow:hidden; height:100%;
+}
+
 .sr-only{
   position:absolute; width:1px; height:1px; padding:0; margin:-1px;
   overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0;
