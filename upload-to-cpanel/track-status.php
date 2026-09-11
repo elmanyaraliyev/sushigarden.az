@@ -20,8 +20,20 @@ if (!$order || empty($order['track_token']) || !hash_equals($order['track_token'
     exit;
 }
 
+$items = array_map(function ($it) {
+    return [
+        'product_id' => $it['product_id'] !== null ? (int)$it['product_id'] : null,
+        'name' => $it['name'],
+        'price' => (float)$it['price'],
+        'qty' => (int)$it['qty'],
+    ];
+}, $order['items']);
+
 echo json_encode([
     'ok' => true,
     'status' => $order['status'],
     'status_label' => sg_order_status_label($order['status']),
-]);
+    'items' => $items,
+    'total' => (float)$order['total'],
+    'created_at' => $order['created_at'],
+], JSON_UNESCAPED_UNICODE);

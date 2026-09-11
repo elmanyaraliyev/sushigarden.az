@@ -615,7 +615,7 @@ document.addEventListener('DOMContentLoaded', function () {
               trackOrderLink.href = 'track.php?id=' + data.order_id + '&t=' + data.track_token;
               try {
                 var mine = JSON.parse(localStorage.getItem('sg_my_orders') || '[]');
-                mine.push({ id: data.order_id, t: data.track_token, number: data.order_number });
+                mine.push({ id: data.order_id, t: data.track_token, number: data.order_number, total: data.total, placedAt: Date.now() });
                 if (mine.length > 20) mine = mine.slice(-20);
                 localStorage.setItem('sg_my_orders', JSON.stringify(mine));
               } catch (e) {}
@@ -649,6 +649,23 @@ document.addEventListener('DOMContentLoaded', function () {
   pill.addEventListener('click', openDrawer);
   document.getElementById('drawer-close').addEventListener('click', closeDrawer);
   overlay.addEventListener('click', closeDrawer);
+
+  // Keçmiş sifarişi təkrarlamaq — track.php "Təkrarla" düyməsi ilə buraya yönləndirəndə
+  // "sg_repeat_cart" açarında saxlanmış məhsulları səbətə əlavə edib açırıq.
+  try {
+    var repeatData = JSON.parse(localStorage.getItem('sg_repeat_cart') || 'null');
+    if (repeatData && repeatData.items && repeatData.items.length) {
+      repeatData.items.forEach(function (it) {
+        if (!it.product_id) return;
+        var id = String(it.product_id);
+        if (!cart[id]) cart[id] = { name: it.name, price: it.price, qty: 0 };
+        cart[id].qty += it.qty;
+      });
+      localStorage.removeItem('sg_repeat_cart');
+      render();
+      openDrawer();
+    }
+  } catch (e) {}
 
   // Məhsul üzərinə toxunanda ətraflı məlumat pəncərəsi (+ düyməsi istisna)
   (function initProductModal() {

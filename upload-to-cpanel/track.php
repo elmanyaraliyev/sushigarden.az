@@ -81,6 +81,24 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
   .track-totals .row.total{font-weight:700; font-size:1.05rem; color:var(--text); padding-top:.4rem;}
   .track-error{text-align:center; padding:2rem;}
   .track-live-note{text-align:center; font-size:.76rem; color:var(--text-soft); margin-top:1.4rem;}
+  .track-history-row{
+    display:flex; align-items:center; justify-content:space-between; gap:.8rem;
+    padding:.8rem 0; border-bottom:1px dotted var(--line);
+  }
+  .track-history-row:last-child{border-bottom:none;}
+  .track-history-main{min-width:0;}
+  .track-history-num{font-weight:700; font-size:.92rem;}
+  .track-history-num a{color:inherit; text-decoration:none;}
+  .track-history-num a:hover{color:var(--accent);}
+  .track-history-meta{font-size:.78rem; color:var(--text-soft); margin-top:.15rem;}
+  .track-history-actions{display:flex; align-items:center; gap:.6rem; flex-shrink:0;}
+  .track-history-price{font-weight:700; color:var(--gold); white-space:nowrap;}
+  .track-repeat-mini{
+    background:none; border:1px solid var(--line); color:var(--text); border-radius:8px;
+    padding:.4rem .7rem; font-size:.76rem; font-weight:600; cursor:pointer; white-space:nowrap;
+    transition:border-color .15s, color .15s;
+  }
+  .track-repeat-mini:hover{border-color:var(--accent); color:var(--accent);}
 </style>
 </head>
 <body style="background:var(--bg);">
@@ -163,6 +181,17 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
           <div class="row"><span>Bəxşiş</span><span><?php echo sg_money($order['tip']); ?></span></div>
           <div class="row total"><span>Ümumi</span><span><?php echo sg_money($order['total']); ?></span></div>
         </div>
+        <?php
+        $repeatItems = array_map(function ($it) {
+            return ['product_id' => $it['product_id'], 'name' => $it['name'], 'price' => (float)$it['price'], 'qty' => (int)$it['qty']];
+        }, $order['items']);
+        ?>
+        <button type="button" class="btn btn-ghost track-repeat-btn" style="margin-top:1rem; width:100%; justify-content:center;" data-repeat-items="<?php echo h(json_encode($repeatItems, JSON_UNESCAPED_UNICODE)); ?>">🔁 Bu sifarişi təkrarla</button>
+      </div>
+
+      <div class="track-section" id="track-history-section" style="display:none;">
+        <h3>Keçmiş sifarişləriniz</h3>
+        <div id="track-history-list"></div>
       </div>
 
       <p class="track-live-note">Bu səhifə statusu avtomatik yeniləyir — bağlamadan gözləyə bilərsiniz.</p>
@@ -190,6 +219,20 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
     });
   }
 
+  function playPing(){
+    try {
+      var ctx = new (window.AudioContext || window.webkitAudioContext)();
+      var osc = ctx.createOscillator(), gain = ctx.createGain();
+      osc.type = 'sine'; osc.frequency.value = 660;
+      gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.start(); osc.stop(ctx.currentTime + 0.35);
+      setTimeout(function(){ ctx.close(); }, 500);
+    } catch (e) {}
+  }
+
   function poll(){
     fetch('track-status.php?id=<?php echo (int)$order['id']; ?>&t=<?php echo h($order['track_token']); ?>')
       .then(function(r){ return r.json(); })
@@ -199,17 +242,11 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
           lastStatus = data.status;
           if (data.status === 'cancelled') { window.location.reload(); return; }
           applyStatus(data.status);
-          try {
-            var ctx = new (window.AudioContext || window.webkitAudioContext)();
-            var osc = ctx.createOscillator(), gain = ctx.createGain();
-            osc.type = 'sine'; osc.frequency.value = 660;
-            gain.gain.setValueAtTime(0.0001, ctx.currentTime);
-            gain.gain.exponentialRampToValueAtTime(0.3, ctx.currentTime + 0.02);
-            gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.3);
-            osc.connect(gain); gain.connect(ctx.destination);
-            osc.start(); osc.stop(ctx.currentTime + 0.35);
-            setTimeout(function(){ ctx.close(); }, 500);
-          } catch (e) {}
+          if (data.status === 'completed') {
+            try { new Audio('assets/sounds/order-completed.mp3').play().catch(function(){}); } catch (e) {}
+          } else {
+            playPing();
+          }
         }
       })
       .catch(function(){});
@@ -218,6 +255,60 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
 })();
 </script>
 <?php endif; ?>
+
+<script>
+(function(){
+  // ---- Sifarişi təkrarlamaq: məhsulları "sg_repeat_cart" açarına yazıb menyuya qayıdırıq ----
+  function goRepeat(items){
+    if (!items || !items.length) return;
+    try { localStorage.setItem('sg_repeat_cart', JSON.stringify({ items: items })); } catch (e) {}
+    window.location.href = 'index.php';
+  }
+  var directRepeatBtn = document.querySelector('.track-repeat-btn');
+  if (directRepeatBtn) {
+    directRepeatBtn.addEventListener('click', function(){
+      var items = [];
+      try { items = JSON.parse(directRepeatBtn.getAttribute('data-repeat-items') || '[]'); } catch (e) {}
+      goRepeat(items);
+    });
+  }
+
+  // ---- Keçmiş sifarişlər siyahısı (bu brauzerdən verilmiş bütün sifarişlər) ----
+  var historySection = document.getElementById('track-history-section');
+  var historyList = document.getElementById('track-history-list');
+  if (!historySection || !historyList) return;
+
+  var mine = [];
+  try { mine = JSON.parse(localStorage.getItem('sg_my_orders') || '[]'); } catch (e) {}
+  if (!mine.length) return;
+
+  mine = mine.slice().reverse(); // ən yenisi öndə
+  historySection.style.display = 'block';
+  mine.forEach(function(o){
+    var row = document.createElement('div');
+    row.className = 'track-history-row';
+    var dateStr = o.placedAt ? new Date(o.placedAt).toLocaleString('az-AZ', { day:'2-digit', month:'2-digit', year:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+    row.innerHTML =
+      '<div class="track-history-main">' +
+        '<div class="track-history-num"><a href="track.php?id=' + o.id + '&t=' + o.t + '">' + (o.number || ('#' + o.id)) + '</a></div>' +
+        '<div class="track-history-meta">' + dateStr + '</div>' +
+      '</div>' +
+      '<div class="track-history-actions">' +
+        (typeof o.total === 'number' ? '<span class="track-history-price">' + o.total.toFixed(2).replace('.', ',') + ' ₼</span>' : '') +
+        '<button type="button" class="track-repeat-mini">🔁 Təkrarla</button>' +
+      '</div>';
+    row.querySelector('.track-repeat-mini').addEventListener('click', function(){
+      fetch('track-status.php?id=' + o.id + '&t=' + o.t)
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          if (data.ok && data.items) goRepeat(data.items);
+        })
+        .catch(function(){});
+    });
+    historyList.appendChild(row);
+  });
+})();
+</script>
 
 </body>
 </html>
