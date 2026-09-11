@@ -18,6 +18,15 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        if ($action === 'save_theme') {
+            $theme = $_POST['color_theme'] ?? 'forest';
+            if (!array_key_exists($theme, sg_color_themes())) $theme = 'forest';
+            sg_set_setting('color_theme', $theme);
+            $_SESSION['flash_ok'] = 'Sayt teması yeniləndi.';
+            header('Location: appearance.php');
+            exit;
+        }
+
         if (!empty($_FILES['logo_icon']['tmp_name'])) {
             $path = sg_save_branding_upload($_FILES['logo_icon'], 400);
             if ($path) { sg_set_setting('logo_icon', $path); } else { $errors[] = 'Loqo (kiçik) yüklənmədi.'; }
@@ -99,6 +108,29 @@ if (!$siteUrl) {
     <button type="submit" class="btn btn-primary">Şəkilləri yadda saxla</button>
   </div>
 </form>
+
+<div class="panel" style="max-width:640px;">
+  <div class="panel-head"><h2>Sayt teması</h2></div>
+  <p style="color:var(--text-soft); font-size:.88rem; margin-top:-.4rem;">Saytın rəng temasını seçin — struktur/tərtibat eyni qalır, yalnız fon və vurğu rəngləri dəyişir.</p>
+  <form method="post">
+    <input type="hidden" name="csrf" value="<?php echo h($csrf); ?>">
+    <input type="hidden" name="action" value="save_theme">
+    <div class="theme-swatch-grid">
+      <?php $currentTheme = sg_setting('color_theme', 'forest'); ?>
+      <?php foreach (sg_color_themes() as $key => $t): ?>
+        <label class="theme-swatch <?php echo $key === $currentTheme ? 'active' : ''; ?>">
+          <input type="radio" name="color_theme" value="<?php echo h($key); ?>" <?php echo $key === $currentTheme ? 'checked' : ''; ?>>
+          <span class="theme-swatch-preview" style="background:<?php echo h($t['bg']); ?>;">
+            <span style="background:<?php echo h($t['accent']); ?>;"></span>
+            <span style="background:<?php echo h($t['gold']); ?>;"></span>
+          </span>
+          <span class="theme-swatch-name"><?php echo h($t['label']); ?></span>
+        </label>
+      <?php endforeach; ?>
+    </div>
+    <button type="submit" class="btn btn-primary" style="margin-top:1rem;">Temanı tətbiq et</button>
+  </form>
+</div>
 
 <div class="panel" style="max-width:640px;">
   <div class="panel-head"><h2>Sayt linki (QR kod üçün)</h2></div>

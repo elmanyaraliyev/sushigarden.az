@@ -21,6 +21,7 @@ $dayLabels = sg_day_labels();
 $logoIconCustom = sg_setting('logo_icon', '');
 $logoFullCustom = sg_setting('logo_full', '');
 $heroImage = sg_setting('hero_image', '');
+$colorTheme = sg_setting('color_theme', 'forest');
 
 $csrf = sg_csrf_token();
 
@@ -62,7 +63,7 @@ if ($sameAs) $restaurantSchema['sameAs'] = $sameAs;
 if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
 ?>
 <!doctype html>
-<html lang="az">
+<html lang="az" data-color-theme="<?php echo h($colorTheme); ?>">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">

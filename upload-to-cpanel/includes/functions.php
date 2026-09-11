@@ -271,6 +271,20 @@ function sg_delete_product_image($filename) {
     }
 }
 
+/**
+ * Admin paneldən seçilə bilən sayt rəng temaları. Hər açar css/style.css-də
+ * :root[data-color-theme="AÇAR"]{...} bloku ilə eyni olmalıdır. Struktur/tərtibat
+ * dəyişmir — yalnız fon/vurğu rəngləri (bu funksiyadakı bg/accent/gold önizləmə üçündür).
+ */
+function sg_color_themes() {
+    return [
+        'forest' => ['label' => 'Meşə Yaşılı', 'bg' => '#12261A', 'accent' => '#9DB49D', 'gold' => '#C9A96B'],
+        'amber'  => ['label' => 'Narıncı Alov', 'bg' => '#241811', 'accent' => '#E0A458', 'gold' => '#E0A458'],
+        'ocean'  => ['label' => 'Mavi Okean', 'bg' => '#0E1D26', 'accent' => '#6FB3C0', 'gold' => '#8FD0C9'],
+        'sumi'   => ['label' => 'Qırmızı Yaponiya', 'bg' => '#1A1210', 'accent' => '#C1443B', 'gold' => '#D98B60'],
+    ];
+}
+
 function sg_csrf_token() {
     if (session_status() !== PHP_SESSION_ACTIVE) session_start();
     if (empty($_SESSION['csrf'])) {
