@@ -2,7 +2,14 @@
   </div>
 </div>
 
-<div id="sg-order-toast" class="sg-order-toast"></div>
+<div id="sg-order-alert" class="sg-order-alert" role="alert">
+  <div class="sg-order-alert-icon">🔔</div>
+  <div class="sg-order-alert-body">
+    <div class="sg-order-alert-title" id="sg-order-alert-title">Yeni sifariş!</div>
+    <div class="sg-order-alert-sub" id="sg-order-alert-sub"></div>
+  </div>
+  <a href="orders.php" class="sg-order-alert-btn" id="sg-order-alert-btn">Bax</a>
+</div>
 
 <script>
 (function(){
@@ -48,10 +55,22 @@
     playTone([880], 0.22); // 'beep1' (defolt)
   };
 
-  // ---- Yeni sifariş üçün fon sorğusu (polling) ----
-  var toast = document.getElementById('sg-order-toast');
-  var STORAGE_KEY = 'sg_admin_last_order_id';
+  /* ------------------------------------------------------------------
+   * Yeni sifariş bildirişi — admin sifarişi AÇANA və ya statusunu
+   * dəyişənə (təsdiq edənə) qədər səs və popup TƏKRAR-TƏKRAR davam edir.
+   * "Görünməmiş sifarişlər" siyahısı localStorage-də saxlanılır ki, hər
+   * admin səhifəsi (bu fayl hər səhifəyə daxil edilir) eyni vəziyyəti bilsin.
+   * ---------------------------------------------------------------- */
+  var alertBox = document.getElementById('sg-order-alert');
+  var alertTitle = document.getElementById('sg-order-alert-title');
+  var alertSub = document.getElementById('sg-order-alert-sub');
+  var alertBtn = document.getElementById('sg-order-alert-btn');
+
+  var LAST_ID_KEY = 'sg_admin_last_order_id';
+  var UNSEEN_KEY = 'sg_admin_unseen_orders';
   var SOUND_KEY = 'sg_admin_sound';
+  var REPEAT_MS = 9000;
+
   var originalTitle = document.title;
   var titleFlashTimer = null;
 
@@ -59,23 +78,32 @@
     try { return localStorage.getItem(SOUND_KEY) || 'chime'; } catch (e) { return 'chime'; }
   }
   function getLastId(){
-    try { return parseInt(localStorage.getItem(STORAGE_KEY) || '0', 10); } catch (e) { return 0; }
+    try { return parseInt(localStorage.getItem(LAST_ID_KEY) || '0', 10); } catch (e) { return 0; }
   }
   function setLastId(id){
-    try { localStorage.setItem(STORAGE_KEY, String(id)); } catch (e) {}
+    try { localStorage.setItem(LAST_ID_KEY, String(id)); } catch (e) {}
   }
-  function showToast(id){
-    toast.textContent = '🔔 Yeni sifariş daxil oldu — #' + id;
-    toast.classList.add('show');
-    setTimeout(function(){ toast.classList.remove('show'); }, 6000);
+  function getUnseen(){
+    try { return JSON.parse(localStorage.getItem(UNSEEN_KEY) || '[]'); } catch (e) { return []; }
   }
-  toast.addEventListener('click', function(){ window.location.href = 'orders.php'; });
+  function setUnseen(arr){
+    try { localStorage.setItem(UNSEEN_KEY, JSON.stringify(arr)); } catch (e) {}
+  }
 
-  function startTitleFlash(id){
+  // Hazırda order-view.php-də hansı sifarişə baxıldığını oxuyur — həmin sifariş
+  // "görülmüş" sayılır, çünki admin onu artıq açıb.
+  function getViewingOrderId(){
+    if (!/order-view\.php/.test(window.location.pathname)) return null;
+    var params = new URLSearchParams(window.location.search);
+    var id = parseInt(params.get('id') || '', 10);
+    return isNaN(id) ? null : id;
+  }
+
+  function startTitleFlash(label){
     stopTitleFlash();
     var on = false;
     titleFlashTimer = setInterval(function(){
-      document.title = on ? originalTitle : ('🔔 Yeni sifariş #' + id + '!');
+      document.title = on ? originalTitle : label;
       on = !on;
     }, 1000);
   }
@@ -84,57 +112,95 @@
     document.title = originalTitle;
   }
 
-  // Başqa sekmədə/proqramda olarkən sifariş gələndə görünsün deyə OS bildirişi göstərir
-  // və sekmə başlığını yanıb-sönən edir — tab arxa planda olsa belə diqqət çəkmək üçün.
   if ('Notification' in window && Notification.permission === 'default') {
     Notification.requestPermission().catch(function(){});
   }
-  function notifyNewOrder(id){
+
+  function showAlert(unseen){
+    var count = unseen.length;
+    if (count === 1) {
+      alertTitle.textContent = 'Yeni sifariş — #' + unseen[0];
+      alertSub.textContent = 'Diqqətinizi gözləyir';
+      alertBtn.href = 'order-view.php?id=' + unseen[0];
+    } else {
+      alertTitle.textContent = count + ' sifariş gözləyir!';
+      alertSub.textContent = 'Baxılmamış sifarişlər var';
+      alertBtn.href = 'orders.php';
+    }
+    alertBox.classList.add('show');
+    // animasiyanı hər dəfə YENİDƏN oynatmaq üçün class-ı çıxarıb reflow ilə geri qoyuruq
+    alertBox.classList.remove('pop');
+    void alertBox.offsetWidth;
+    alertBox.classList.add('pop');
+  }
+  function hideAlert(){
+    alertBox.classList.remove('show', 'pop');
+    stopTitleFlash();
+  }
+
+  function fireAlert(unseen){
     window.sgPlayAdminSound(getSound());
-    showToast(id);
+    showAlert(unseen);
     if (document.hidden) {
-      startTitleFlash(id);
+      var label = unseen.length === 1 ? ('🔔 Sifariş #' + unseen[0] + '!') : ('🔔 ' + unseen.length + ' sifariş!');
+      startTitleFlash(label);
       if ('Notification' in window && Notification.permission === 'granted') {
         try {
-          var n = new Notification('🍣 Yeni sifariş — Sushi Garden', {
-            body: 'Sifariş #' + id + ' daxil oldu.',
+          var n = new Notification('🍣 Sushi Garden — Yeni sifariş', {
+            body: unseen.length === 1 ? ('Sifariş #' + unseen[0] + ' daxil oldu.') : (unseen.length + ' sifariş cavab gözləyir.'),
             icon: '../assets/logo-icon.jpg',
-            tag: 'sg-order-' + id
+            tag: 'sg-order-alert'
           });
-          n.onclick = function(){ window.focus(); window.location.href = 'orders.php'; };
+          n.onclick = function(){ window.focus(); window.location.href = alertBtn.href; };
         } catch (e) {}
       }
     }
   }
 
-  document.addEventListener('visibilitychange', function(){
-    if (!document.hidden) {
-      stopTitleFlash();
-      checkOrders(); // sekməyə qayıdan kimi dərhal yoxla, gecikmə olmasın
-    }
+  alertBtn.addEventListener('click', function(){
+    // sifarişə keçəndə həmin ID-ni dərhal "görülmüş" say
+    var unseen = getUnseen();
+    if (unseen.length === 1) { setUnseen([]); hideAlert(); }
   });
 
-  var first = true;
-  function checkOrders(){
+  document.addEventListener('visibilitychange', function(){
+    if (!document.hidden) { stopTitleFlash(); tick(); }
+  });
+
+  function tick(){
     fetch('order-count.php', { credentials: 'same-origin' })
       .then(function(r){ return r.json(); })
       .then(function(data){
+        var pendingIds = data.pending_ids || [];
         var last = getLastId();
-        if (first) {
-          // İlk yükləmədə mövcud ən böyük ID-ni sadəcə yadda saxla, xəbərdarlıq vermə.
-          if (!last || data.latest_id > last) setLastId(data.latest_id);
-          first = false;
-          return;
-        }
-        if (data.latest_id > last) {
-          setLastId(data.latest_id);
-          notifyNewOrder(data.latest_id);
+        var unseen = getUnseen();
+
+        // yeni gələn (indiyədək görülməmiş) sifarişləri əlavə et
+        pendingIds.forEach(function(id){
+          if (id > last && unseen.indexOf(id) === -1) unseen.push(id);
+        });
+
+        // hazırda açıq olan sifarişi görülmüş say
+        var viewingId = getViewingOrderId();
+        if (viewingId !== null) unseen = unseen.filter(function(id){ return id !== viewingId; });
+
+        // artıq gözləmədə olmayan (statusu dəyişdirilmiş/təsdiqlənmiş) sifarişləri sil
+        unseen = unseen.filter(function(id){ return pendingIds.indexOf(id) !== -1; });
+
+        setUnseen(unseen);
+        setLastId(data.latest_id);
+
+        if (unseen.length) {
+          fireAlert(unseen);
+        } else {
+          hideAlert();
         }
       })
       .catch(function(){});
   }
-  checkOrders();
-  setInterval(checkOrders, 15000);
+
+  tick();
+  setInterval(tick, REPEAT_MS);
 })();
 </script>
 </body>

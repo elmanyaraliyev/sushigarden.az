@@ -196,14 +196,48 @@ textarea{min-height:90px; resize:vertical;}
 .lang-block-title .req{color:var(--accent); font-weight:600; font-size:.78rem;}
 .lang-block-title .opt{color:var(--text-soft); font-weight:500; font-size:.78rem;}
 
-.sg-order-toast{
-  position:fixed; top:16px; right:16px; z-index:200;
-  background:var(--forest); color:#fff; padding:.9rem 1.3rem; border-radius:8px;
-  box-shadow:var(--shadow); font-weight:600; font-size:.9rem; cursor:pointer;
-  transform:translateY(-12px); opacity:0; pointer-events:none;
-  transition:transform .25s ease, opacity .25s ease;
+.sg-order-alert{
+  position:fixed; right:20px; bottom:20px; z-index:300;
+  display:flex; align-items:center; gap:.9rem;
+  max-width:320px; padding:.9rem 1rem; border-radius:14px;
+  background:var(--bg-side); color:var(--text-on-side);
+  border:2px solid var(--accent);
+  box-shadow:0 20px 44px -16px rgba(0,0,0,.55);
+  opacity:0; transform:translateX(140%); pointer-events:none;
+  transition:opacity .2s ease;
 }
-.sg-order-toast.show{transform:translateY(0); opacity:1; pointer-events:auto;}
+.sg-order-alert.show{opacity:1; transform:translateX(0); pointer-events:auto;}
+.sg-order-alert.pop{animation:sg-alert-pop .55s cubic-bezier(.34,1.56,.64,1);}
+@keyframes sg-alert-pop{
+  0%{transform:translateX(140%) scale(.92); opacity:0;}
+  55%{transform:translateX(-10px) scale(1.04); opacity:1;}
+  100%{transform:translateX(0) scale(1); opacity:1;}
+}
+.sg-order-alert-icon{
+  font-size:1.7rem; line-height:1; flex-shrink:0;
+  animation:sg-alert-ring 1s ease-in-out infinite;
+  transform-origin:50% 0%;
+}
+@keyframes sg-alert-ring{
+  0%, 100%{transform:rotate(0);}
+  15%{transform:rotate(-16deg);}
+  30%{transform:rotate(14deg);}
+  45%{transform:rotate(-10deg);}
+  60%{transform:rotate(6deg);}
+  75%{transform:rotate(0);}
+}
+.sg-order-alert-body{flex:1; min-width:0;}
+.sg-order-alert-title{font-weight:700; font-size:.94rem; color:#fff;}
+.sg-order-alert-sub{font-size:.78rem; color:var(--text-on-side-soft); margin-top:.1rem;}
+.sg-order-alert-btn{
+  flex-shrink:0; background:var(--accent); color:#fff; text-decoration:none;
+  font-weight:700; font-size:.8rem; padding:.5rem .8rem; border-radius:8px;
+  white-space:nowrap;
+}
+@media (prefers-reduced-motion: reduce){
+  .sg-order-alert.pop{animation:none;}
+  .sg-order-alert-icon{animation:none;}
+}
 
 .sound-options{display:flex; gap:.6rem; flex-wrap:wrap; align-items:center;}
 .sound-options label{
