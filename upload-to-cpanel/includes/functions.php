@@ -123,18 +123,25 @@ function sg_next_sort_order($table, $categoryId = null) {
  * base64 mətn sahəsi kimi DEYİL, çünki bəzi hostinqlərin ModSecurity/WAF
  * qaydaları çox uzun base64 mətn sahələrini sadəcə susaraq atır) serverdə
  * saxlayır: JPEG-ə çevirir, uyğun ölçüyə salır (maks. en 900px) və
- * /uploads/products qovluğuna yazır. Uğurlu olarsa fayl adını, olmazsa null qaytarır.
+ * /uploads/products qovluğuna yazır.
+ *
+ * Qaytarır: ['ok' => true, 'file' => 'p123.jpg'] və ya
+ *           ['ok' => false, 'reason' => 'admin panelində göstəriləcək konkret səbəb']
+ * — belə ki, uğursuz olanda admin dərhal DƏQIQ səbəbi görsün (icazə, limit, GD və s.),
+ * ayrıca diaqnostika səhifəsinə ehtiyac qalmasın.
  */
 function sg_save_product_photo($fileArray) {
     if (empty($fileArray) || !isset($fileArray['tmp_name']) || $fileArray['error'] !== UPLOAD_ERR_OK) {
-        return null;
+        return ['ok' => false, 'reason' => 'Fayl serverə düzgün ötürülmədi (yükləmə xətası: kodu ' . h((string)($fileArray['error'] ?? '?')) . ').'];
     }
     $binary = @file_get_contents($fileArray['tmp_name']);
-    if ($binary === false || strlen($binary) < 10) return null;
+    if ($binary === false || strlen($binary) < 10) {
+        return ['ok' => false, 'reason' => 'Müvəqqəti fayl oxuna bilmədi (server müvəqqəti qovluq problemi ola bilər).'];
+    }
 
     if (!sg_ensure_writable_dir(SG_UPLOADS_DIR)) {
         error_log('Sushi Garden: uploads/products qovluğu yazıla bilmir: ' . SG_UPLOADS_DIR);
-        return null;
+        return ['ok' => false, 'reason' => '"uploads/products" qovluğu yazıla bilmir (icazə problemi). cPanel → File Manager-də bu qovluğun üzərinə sağ klikləyib "Permissions" → 755 (olmasa 775) edin.'];
     }
 
     $filename = 'p' . time() . '_' . substr(bin2hex(random_bytes(4)), 0, 8) . '.jpg';
@@ -163,12 +170,13 @@ function sg_save_product_photo($fileArray) {
     }
 
     if (!$written || !is_file($path)) {
-        error_log('Sushi Garden: şəkil diskə yazıla bilmədi: ' . $path);
-        return null;
+        $err = error_get_last();
+        error_log('Sushi Garden: şəkil diskə yazıla bilmədi: ' . $path . ' — ' . ($err['message'] ?? ''));
+        return ['ok' => false, 'reason' => 'Şəkil diskə yazıla bilmədi (disk yeri dolu ola bilər, ya da hostinqin "open_basedir" tənzimləməsi qovluğa yazışı bloklayır). Hostinq dəstəyinə "uploads/products qovluğuna PHP yazışını icazə verin" deyə müraciət edin.'];
     }
 
     @chmod($path, 0644);
-    return $filename;
+    return ['ok' => true, 'file' => $filename];
 }
 
 /**

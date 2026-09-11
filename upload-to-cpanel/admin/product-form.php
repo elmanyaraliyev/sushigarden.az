@@ -65,12 +65,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $imageFilename = $product['image'] ?? null;
 
             if ($uploadedPhoto && $uploadedPhoto['error'] === UPLOAD_ERR_OK) {
-                $newFile = sg_save_product_photo($uploadedPhoto);
-                if ($newFile) {
+                $photoResult = sg_save_product_photo($uploadedPhoto);
+                if ($photoResult['ok']) {
                     if ($imageFilename) sg_delete_product_image($imageFilename);
-                    $imageFilename = $newFile;
+                    $imageFilename = $photoResult['file'];
                 } else {
-                    $errors[] = 'Şəkil yadda saxlanılmadı, yenidən cəhd edin.';
+                    $errors[] = 'Şəkil yadda saxlanılmadı: ' . $photoResult['reason'];
                 }
             } elseif ($removeImage && $imageFilename) {
                 sg_delete_product_image($imageFilename);
