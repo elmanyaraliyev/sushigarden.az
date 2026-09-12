@@ -3,6 +3,7 @@ require_once __DIR__ . '/includes/customer_auth.php';
 $customer = sg_current_customer();
 $menu = sg_get_menu(true); // yalnız aktiv kateqoriya/məhsullar
 $featured = sg_get_featured(4);
+$galleryItems = array_slice(sg_get_gallery_items(true), 0, 9);
 
 $catsWithItems = array_values(array_filter($menu, function ($c) { return !empty($c['products']); }));
 $totalItems = 0;
@@ -24,6 +25,18 @@ $logoIconCustom = sg_setting('logo_icon', '');
 $logoFullCustom = sg_setting('logo_full', '');
 $heroImage = sg_setting('hero_image', '');
 $colorTheme = sg_setting('color_theme', 'forest');
+$aboutSubtextAz = sg_setting('about_subtext_az', 'Bakının mərkəzində əl işi suşi təcrübəsi — təbii materiallar, yapon dəqiqliyi və səmimi qonaqpərvərliklə hər gün yenidən hazırlanır.');
+$aboutSubtextRu = sg_setting('about_subtext_ru', '');
+$aboutSubtextEn = sg_setting('about_subtext_en', '');
+$aboutConceptTitleAz = sg_setting('about_concept_title_az', 'Bağ Konsepsiyamız');
+$aboutConceptTitleRu = sg_setting('about_concept_title_ru', '');
+$aboutConceptTitleEn = sg_setting('about_concept_title_en', '');
+$aboutConceptP1Az = sg_setting('about_concept_p1_az', 'Sushi Garden bir restorandan çox — canlı bir bağdır. Hər boşqab təbiətin sadəliyini, hər dad isə ustaların səbrini əks etdirir.');
+$aboutConceptP1Ru = sg_setting('about_concept_p1_ru', '');
+$aboutConceptP1En = sg_setting('about_concept_p1_en', '');
+$aboutConceptP2Az = sg_setting('about_concept_p2_az', 'Təzə balıq hər səhər tədarük olunur, düyü əl ilə hazırlanır, tərəvəzlər isə mövsümə uyğun seçilir — sürətli qidalanma deyil, yavaş və düşünülmüş bir sənət.');
+$aboutConceptP2Ru = sg_setting('about_concept_p2_ru', '');
+$aboutConceptP2En = sg_setting('about_concept_p2_en', '');
 
 $csrf = sg_csrf_token();
 
@@ -284,7 +297,7 @@ $menuSchema = [
           <div class="reveal">
             <p class="eyebrow" data-i18n="about_eyebrow">Haqqımızda</p>
             <h2>Sushi Garden: <em>Where Art Meets Nature</em></h2>
-            <p data-i18n="about_subtext">Bakının mərkəzində əl işi suşi təcrübəsi — təbii materiallar, yapon dəqiqliyi və səmimi qonaqpərvərliklə hər gün yenidən hazırlanır.</p>
+            <p data-i18n-ru="<?php echo h($aboutSubtextRu); ?>" data-i18n-en="<?php echo h($aboutSubtextEn); ?>"><?php echo h($aboutSubtextAz); ?></p>
           </div>
           <div class="about-logo reveal">
             <?php if ($logoFullCustom): ?>
@@ -297,9 +310,9 @@ $menuSchema = [
         <div class="concept-band">
           <div class="concept-inner reveal">
             <p class="eyebrow" data-i18n="about_concept_eyebrow">Fəlsəfəmiz</p>
-            <h2 data-i18n="about_concept_title">Bağ Konsepsiyamız</h2>
-            <p data-i18n="about_concept_p1">Sushi Garden bir restorandan çox — canlı bir bağdır. Hər boşqab təbiətin sadəliyini, hər dad isə ustaların səbrini əks etdirir.</p>
-            <p data-i18n="about_concept_p2">Təzə balıq hər səhər tədarük olunur, düyü əl ilə hazırlanır, tərəvəzlər isə mövsümə uyğun seçilir — sürətli qidalanma deyil, yavaş və düşünülmüş bir sənət.</p>
+            <h2 data-i18n-ru="<?php echo h($aboutConceptTitleRu); ?>" data-i18n-en="<?php echo h($aboutConceptTitleEn); ?>"><?php echo h($aboutConceptTitleAz); ?></h2>
+            <p data-i18n-ru="<?php echo h($aboutConceptP1Ru); ?>" data-i18n-en="<?php echo h($aboutConceptP1En); ?>"><?php echo h($aboutConceptP1Az); ?></p>
+            <p data-i18n-ru="<?php echo h($aboutConceptP2Ru); ?>" data-i18n-en="<?php echo h($aboutConceptP2En); ?>"><?php echo h($aboutConceptP2Az); ?></p>
             <p class="copyright-note"><span class="copyright-icon">©</span> <span id="year-about"></span> <?php echo h($restaurantName); ?> — <span data-i18n="copyright_text">Müəllif hüquqları qorunur</span></p>
           </div>
         </div>
@@ -313,25 +326,36 @@ $menuSchema = [
           <h2 data-i18n="gallery_title">Təbiətdən İlhamlanan Anlar</h2>
         </div>
         <div class="gallery-grid">
-          <?php
-          $galleryTiles = [
-            ['az' => 'Yarpaq Üzərində Suşi', 'ru' => 'Суши на листе', 'en' => 'Sushi on a Leaf', 'a' => '#274A32', 'b' => '#12261A'],
-            ['az' => 'Bağ Masası',           'ru' => 'Садовый стол',  'en' => 'The Garden Table', 'a' => '#1F3B29', 'b' => '#0E1D14'],
-            ['az' => 'Premium Seçim',        'ru' => 'Премиум выбор', 'en' => 'Premium Selection', 'a' => '#2C5238', 'b' => '#13291B'],
-            ['az' => 'Fəsil Toxumları',      'ru' => 'Сезонные ноты', 'en' => 'Seasonal Notes',   'a' => '#22412C', 'b' => '#0E1D14'],
-            ['az' => 'Şəf Toxunuşu',         'ru' => 'Рука шефа',     'en' => "Chef's Touch",     'a' => '#2E5A3B', 'b' => '#12261A'],
-            ['az' => 'Axşam Süfrəsi',        'ru' => 'Вечерний стол', 'en' => 'Evening Table',    'a' => '#1B3423', 'b' => '#0E1D14'],
-            ['az' => 'Yaşıl Guşə',           'ru' => 'Зелёный уголок','en' => 'Green Corner',     'a' => '#264A30', 'b' => '#12261A'],
-            ['az' => 'Xüsusi Sifariş',       'ru' => 'Особый заказ',  'en' => 'Chef\'s Special',  'a' => '#305B3C', 'b' => '#13291B'],
-            ['az' => 'Təbiət və Dad',        'ru' => 'Природа и вкус','en' => 'Nature & Flavor',  'a' => '#1E3B27', 'b' => '#0E1D14'],
-          ];
-          foreach ($galleryTiles as $t):
-          ?>
-          <div class="gallery-tile reveal" style="--tile-a:<?php echo h($t['a']); ?>; --tile-b:<?php echo h($t['b']); ?>;">
-            <div class="leaf"></div>
-            <div class="cap" data-i18n-ru="<?php echo h($t['ru']); ?>" data-i18n-en="<?php echo h($t['en']); ?>"><?php echo h($t['az']); ?><span data-i18n="gallery_tag">Sushi Garden</span></div>
-          </div>
-          <?php endforeach; ?>
+          <?php if ($galleryItems): ?>
+            <?php foreach ($galleryItems as $g): ?>
+              <div class="gallery-tile gallery-tile-photo reveal">
+                <img src="<?php echo h($g['image']); ?>" alt="<?php echo h($g['caption_az'] ?: $restaurantName); ?>" loading="lazy">
+                <?php if ($g['caption_az']): ?>
+                  <div class="cap" data-i18n-ru="<?php echo h($g['caption_ru']); ?>" data-i18n-en="<?php echo h($g['caption_en']); ?>"><?php echo h($g['caption_az']); ?></div>
+                <?php endif; ?>
+              </div>
+            <?php endforeach; ?>
+          <?php else: ?>
+            <?php
+            $galleryTiles = [
+              ['az' => 'Yarpaq Üzərində Suşi', 'ru' => 'Суши на листе', 'en' => 'Sushi on a Leaf', 'a' => '#274A32', 'b' => '#12261A'],
+              ['az' => 'Bağ Masası',           'ru' => 'Садовый стол',  'en' => 'The Garden Table', 'a' => '#1F3B29', 'b' => '#0E1D14'],
+              ['az' => 'Premium Seçim',        'ru' => 'Премиум выбор', 'en' => 'Premium Selection', 'a' => '#2C5238', 'b' => '#13291B'],
+              ['az' => 'Fəsil Toxumları',      'ru' => 'Сезонные ноты', 'en' => 'Seasonal Notes',   'a' => '#22412C', 'b' => '#0E1D14'],
+              ['az' => 'Şəf Toxunuşu',         'ru' => 'Рука шефа',     'en' => "Chef's Touch",     'a' => '#2E5A3B', 'b' => '#12261A'],
+              ['az' => 'Axşam Süfrəsi',        'ru' => 'Вечерний стол', 'en' => 'Evening Table',    'a' => '#1B3423', 'b' => '#0E1D14'],
+              ['az' => 'Yaşıl Guşə',           'ru' => 'Зелёный уголок','en' => 'Green Corner',     'a' => '#264A30', 'b' => '#12261A'],
+              ['az' => 'Xüsusi Sifariş',       'ru' => 'Особый заказ',  'en' => 'Chef\'s Special',  'a' => '#305B3C', 'b' => '#13291B'],
+              ['az' => 'Təbiət və Dad',        'ru' => 'Природа и вкус','en' => 'Nature & Flavor',  'a' => '#1E3B27', 'b' => '#0E1D14'],
+            ];
+            foreach ($galleryTiles as $t):
+            ?>
+            <div class="gallery-tile reveal" style="--tile-a:<?php echo h($t['a']); ?>; --tile-b:<?php echo h($t['b']); ?>;">
+              <div class="leaf"></div>
+              <div class="cap" data-i18n-ru="<?php echo h($t['ru']); ?>" data-i18n-en="<?php echo h($t['en']); ?>"><?php echo h($t['az']); ?><span data-i18n="gallery_tag">Sushi Garden</span></div>
+            </div>
+            <?php endforeach; ?>
+          <?php endif; ?>
         </div>
       </div>
     </section>
@@ -349,7 +373,7 @@ $menuSchema = [
                 <li><span class="k" data-i18n="contact_address">Ünvan</span><span class="v"><?php echo h($address); ?></span></li>
                 <li><span class="k" data-i18n="contact_phone">Telefon</span><span class="v"><a href="tel:+<?php echo h($phoneWa); ?>" style="text-decoration:none;"><?php echo h($phoneDisplay); ?></a></span></li>
                 <?php if ($contactEmail): ?>
-                <li><span class="k" data-i18n="contact_email">E-poçt</span><span class="v"><a href="mailto:<?php echo h($contactEmail); ?>" style="text-decoration:none;"><?php echo h($contactEmail); ?></a></span></li>
+                <li><span class="k" data-i18n="contact_email">E-poçt</span><span class="v"><a href="mailto:<?php echo h($contactEmail); ?>?subject=<?php echo rawurlencode('Sushi Garden — Rəy/Şikayət'); ?>" style="text-decoration:underline;"><?php echo h($contactEmail); ?></a></span></li>
                 <?php endif; ?>
               </ul>
               <?php if ($hours): ?>
@@ -369,11 +393,14 @@ $menuSchema = [
                 <a href="https://wa.me/<?php echo h($phoneWa); ?>" target="_blank" rel="noopener">WA</a>
               </div>
             </div>
-            <a class="map-placeholder" href="<?php echo h($mapsUrl); ?>" target="_blank" rel="noopener">
-              <span class="pin">📍</span>
-              <span><?php echo h($restaurantName); ?> — <span data-i18n="contact_map_open">Google Maps-da aç</span></span>
-              <span class="sub" data-i18n="contact_map_route">Marşrutu almaq üçün klikləyin</span>
-            </a>
+            <div class="map-embed">
+              <iframe
+                src="https://maps.google.com/maps?q=<?php echo urlencode($address ?: ($restaurantName . ', Bakı, Azərbaycan')); ?>&z=15&output=embed"
+                loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen title="<?php echo h($restaurantName); ?> — xəritə"></iframe>
+              <a class="map-embed-link" href="<?php echo h($mapsUrl); ?>" target="_blank" rel="noopener">
+                📍 <span data-i18n="contact_map_open">Google Maps-da aç</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>
@@ -394,6 +421,7 @@ $menuSchema = [
 
 <div id="overlay"></div>
 <button id="cart-pill" aria-label="Sifarişi göstər">
+  <svg class="cart-pill-icon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 2-1.58l1.65-7.42H5.12"/></svg>
   <span data-i18n="cart_pill_label">Sifariş</span>
   <span class="count" id="cart-count">0</span>
 </button>
@@ -518,6 +546,12 @@ $menuSchema = [
   </div>
 </div>
 
+<script>
+  window.SG_COMPLETED_SOUND_TYPE = <?php echo json_encode(sg_setting('customer_completed_sound_type', 'bundled')); ?>;
+  window.SG_COMPLETED_SOUND_FILE = <?php echo json_encode(sg_setting('customer_completed_sound', '')); ?>;
+</script>
 <script src="js/site.js?v=<?php echo (int)@filemtime(__DIR__ . '/js/site.js'); ?>" defer></script>
+<script src="js/notify-sounds.js"></script>
+<script src="js/order-watcher.js?v=<?php echo (int)@filemtime(__DIR__ . '/js/order-watcher.js'); ?>" defer></script>
 </body>
 </html>

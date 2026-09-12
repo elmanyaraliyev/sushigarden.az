@@ -111,12 +111,14 @@ header{
 }
 header.scrolled .nav{padding:11px 28px;}
 .wordmark{
-  display:flex; align-items:center; gap:.7rem;
-  font-family:'Playfair Display', Georgia, serif; font-weight:900; font-size:1.7rem;
+  display:flex; align-items:center; gap:clamp(.4rem, 2vw, .7rem);
+  font-family:'Playfair Display', Georgia, serif; font-weight:900;
+  font-size:clamp(1.05rem, 4.2vw, 1.7rem);
   letter-spacing:.005em; text-decoration:none; line-height:1;
+  white-space:nowrap; min-width:0; flex-shrink:1;
 }
 .brand-icon{
-  width:38px; height:38px; border-radius:50%;
+  width:clamp(26px, 8vw, 38px); height:clamp(26px, 8vw, 38px); border-radius:50%;
   object-fit:cover; flex-shrink:0;
   box-shadow:0 0 0 1px var(--line);
 }
@@ -463,6 +465,12 @@ header.scrolled .nav{padding:11px 28px;}
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cpath d='M20 100C17 68 33 46 52 38 44 58 50 78 62 90 46 94 30 98 20 100Z' fill='%23F4F0E2' fill-opacity='0.08'/%3E%3C/svg%3E");
   background-size:120px 120px;
 }
+.gallery-tile-photo::before{content:none;}
+.gallery-tile-photo::after{
+  content:''; position:absolute; inset:0;
+  background:linear-gradient(to top, rgba(0,0,0,.65), transparent 55%);
+  pointer-events:none;
+}
 .gallery-tile .cap{
   position:relative; z-index:1; padding:1.1rem 1.2rem;
   font-family:'Cormorant Garamond',serif; font-size:1.05rem; color:#fff;
@@ -505,16 +513,20 @@ header.scrolled .nav{padding:11px 28px;}
 }
 .social-row a:hover{border-color:var(--accent); color:var(--accent);}
 
-.map-placeholder{
-  min-height:260px; height:100%; border-radius:var(--radius); border:1px solid var(--line);
-  background:var(--bg);
-  display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;
-  color:var(--text); font-size:.98rem; font-weight:600; padding:2rem; gap:.5rem;
-  transition:border-color .15s;
+.map-embed{
+  position:relative; min-height:260px; height:100%; border-radius:var(--radius);
+  border:1px solid var(--line); overflow:hidden; background:var(--bg);
 }
-.map-placeholder:hover{border-color:var(--accent);}
-.map-placeholder .pin{font-size:1.7rem;}
-.map-placeholder .sub{font-size:.78rem; font-weight:400; color:var(--text-soft);}
+.map-embed iframe{width:100%; height:100%; min-height:260px; border:0; display:block; filter:saturate(.85);}
+.map-embed-link{
+  position:absolute; left:.7rem; bottom:.7rem; z-index:1;
+  display:inline-flex; align-items:center; gap:.4rem;
+  background:var(--bg-raised); color:var(--text); text-decoration:none;
+  font-size:.8rem; font-weight:700; padding:.5rem .8rem; border-radius:8px;
+  border:1px solid var(--line); box-shadow:var(--shadow);
+  transition:border-color .15s, color .15s;
+}
+.map-embed-link:hover{border-color:var(--accent); color:var(--accent);}
 
 /* ---------------------------------------------------------------------
  * Footer
@@ -655,5 +667,53 @@ footer{
 .product-modal-body p{color:var(--text-soft); font-size:.96rem; margin:0 0 1.3rem;}
 .product-modal-foot{display:flex; align-items:center; justify-content:space-between; gap:1rem; flex-wrap:wrap;}
 .product-modal-foot .price{font-size:1.4rem; font-weight:800; font-family:'Cormorant Garamond',serif; color:var(--gold);}
+
+/* ---------------------------------------------------------------------
+ * Rəy pəncərəsi (5 ulduz) — track.php-də server tərəfindən, digər
+ * səhifələrdə (index.php) js/order-watcher.js tərəfindən proqramla
+ * yaradılır; hər ikisi bu EYNİ stilləri istifadə edir.
+ * ------------------------------------------------------------------- */
+.review-popup-overlay{
+  position:fixed; inset:0; z-index:400; display:none;
+  align-items:center; justify-content:center; padding:20px;
+  background:rgba(0,0,0,.6);
+}
+.review-popup-overlay.show{display:flex;}
+.review-popup-card{
+  background:var(--bg-raised); border:1px solid var(--line); border-radius:16px;
+  padding:2rem; max-width:380px; width:100%; text-align:center; box-shadow:var(--shadow);
+  animation:sg-review-pop .4s cubic-bezier(.34,1.56,.64,1);
+}
+@keyframes sg-review-pop{0%{transform:scale(.85); opacity:0;} 100%{transform:scale(1); opacity:1;}}
+.review-popup-icon{font-size:2.6rem; margin-bottom:.4rem;}
+.review-popup-card h3{font-family:'Playfair Display',serif; font-size:1.35rem; margin-bottom:.4rem;}
+.review-popup-card p{color:var(--text-soft); font-size:.9rem; margin-bottom:1rem;}
+.review-stars{font-size:2.2rem; letter-spacing:.15em; margin-bottom:1rem; cursor:pointer;}
+.review-stars span{color:var(--line); transition:color .15s, transform .15s;}
+.review-stars span.filled{color:var(--gold);}
+.review-stars span:hover{transform:scale(1.15);}
+.review-popup-card textarea{
+  width:100%; padding:.65rem .8rem; border-radius:6px; border:1px solid var(--line);
+  background:var(--bg); color:var(--text); font-size:.9rem; font-family:inherit;
+  resize:vertical; min-height:3em; margin-bottom:1rem;
+}
+.review-popup-actions{display:flex; gap:.6rem;}
+.review-popup-actions .btn{flex:1; justify-content:center;}
+.review-thanks{color:var(--accent); font-weight:700; padding:1rem 0;}
+
+/* Sifariş statusu dəyişəndə hər hansı səhifədə çıxan kiçik bildiriş (toast) —
+ * js/order-watcher.js tərəfindən yaradılır. */
+.sg-status-toast{
+  position:fixed; left:50%; bottom:22px; z-index:410;
+  display:flex; align-items:center; gap:.6rem;
+  background:var(--bg-raised); color:var(--text); border:1px solid var(--accent);
+  padding:.8rem 1.2rem; border-radius:999px; box-shadow:var(--shadow);
+  font-size:.88rem; font-weight:600; white-space:nowrap; cursor:pointer;
+  transform:translate(-50%, 16px); opacity:0; pointer-events:none;
+  transition:transform .25s ease, opacity .25s ease;
+  max-width:90vw; overflow:hidden; text-overflow:ellipsis;
+}
+.sg-status-toast.show{transform:translate(-50%, 0); opacity:1; pointer-events:auto;}
+.sg-status-toast-icon{flex-shrink:0; font-size:1.1rem;}
 
 ::selection{background:var(--accent); color:var(--ink);}

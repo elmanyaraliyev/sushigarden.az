@@ -79,6 +79,19 @@ function sg_migrate(PDO $pdo) {
     }
 
     $pdo->exec("
+        CREATE TABLE IF NOT EXISTS gallery_items (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            image TEXT NOT NULL,
+            caption_az TEXT NOT NULL DEFAULT '',
+            caption_ru TEXT NOT NULL DEFAULT '',
+            caption_en TEXT NOT NULL DEFAULT '',
+            sort_order INTEGER NOT NULL DEFAULT 0,
+            active INTEGER NOT NULL DEFAULT 1,
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+    ");
+
+    $pdo->exec("
         CREATE TABLE IF NOT EXISTS reviews (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             order_id INTEGER NOT NULL UNIQUE,
@@ -148,6 +161,18 @@ function sg_migrate(PDO $pdo) {
             'seo_keywords' => 'sushi, sushi garden, suşi bakı, sushi baku, sushi sifarişi, sushi çatdırılma, yapon mətbəxi bakı, sushi roll, hot roll, sushi bar',
             'customer_completed_sound_type' => 'bundled',
             'customer_completed_sound' => '',
+            'about_subtext_az' => 'Bakının mərkəzində əl işi suşi təcrübəsi — təbii materiallar, yapon dəqiqliyi və səmimi qonaqpərvərliklə hər gün yenidən hazırlanır.',
+            'about_subtext_ru' => 'В центре Баку — суши ручной работы: натуральные ингредиенты, японская точность и искреннее гостеприимство каждый день.',
+            'about_subtext_en' => 'In the heart of Baku, a handcrafted sushi experience — natural ingredients, Japanese precision, and genuine hospitality, made fresh every day.',
+            'about_concept_title_az' => 'Bağ Konsepsiyamız',
+            'about_concept_title_ru' => 'Концепция нашего сада',
+            'about_concept_title_en' => 'Our Garden Concept',
+            'about_concept_p1_az' => 'Sushi Garden bir restorandan çox — canlı bir bağdır. Hər boşqab təbiətin sadəliyini, hər dad isə ustaların səbrini əks etdirir.',
+            'about_concept_p1_ru' => 'Sushi Garden — больше, чем ресторан, это живой сад. Каждое блюдо отражает простоту природы, а каждый вкус — терпение мастера.',
+            'about_concept_p1_en' => 'Sushi Garden is more than a restaurant — it is a living garden. Every plate reflects the simplicity of nature, and every flavor the patience of a craftsman.',
+            'about_concept_p2_az' => 'Təzə balıq hər səhər tədarük olunur, düyü əl ilə hazırlanır, tərəvəzlər isə mövsümə uyğun seçilir — sürətli qidalanma deyil, yavaş və düşünülmüş bir sənət.',
+            'about_concept_p2_ru' => 'Свежая рыба поставляется каждое утро, рис готовится вручную, а овощи подбираются по сезону — это не быстрая еда, а медленное, продуманное искусство.',
+            'about_concept_p2_en' => 'Fresh fish arrives every morning, rice is prepared by hand, and vegetables are chosen by season — not fast food, but a slow, considered art.',
         ];
         $insSetting = $pdo->prepare('INSERT OR IGNORE INTO site_settings (k, v) VALUES (?, ?)');
         foreach ($defaults as $k => $v) {

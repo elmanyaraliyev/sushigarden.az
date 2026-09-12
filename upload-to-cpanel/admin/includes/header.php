@@ -26,9 +26,11 @@ $sg_pendingOrders = (int)sg_db()->query("SELECT COUNT(*) FROM orders WHERE statu
       <a href="customers.php" class="<?php echo in_array($activeNav ?? '', ['customers', 'customer-view'], true) ? 'active' : ''; ?>">👥 İstifadəçilər</a>
       <a href="reviews.php" class="<?php echo ($activeNav ?? '') === 'reviews' ? 'active' : ''; ?>">⭐ Rəylər</a>
       <a href="restaurant.php" class="<?php echo ($activeNav ?? '') === 'restaurant' ? 'active' : ''; ?>">🏠 Restoran</a>
+      <a href="about.php" class="<?php echo ($activeNav ?? '') === 'about' ? 'active' : ''; ?>">📖 Haqqımızda</a>
       <a href="appearance.php" class="<?php echo ($activeNav ?? '') === 'appearance' ? 'active' : ''; ?>">🎨 Görünüş</a>
       <a href="categories.php" class="<?php echo ($activeNav ?? '') === 'categories' ? 'active' : ''; ?>">📂 Kateqoriyalar</a>
       <a href="products.php" class="<?php echo ($activeNav ?? '') === 'products' ? 'active' : ''; ?>">🍣 Menyu</a>
+      <a href="gallery.php" class="<?php echo ($activeNav ?? '') === 'gallery' ? 'active' : ''; ?>">🖼️ Qalereya</a>
       <a href="contacts.php" class="<?php echo ($activeNav ?? '') === 'contacts' ? 'active' : ''; ?>">☎️ Əlaqələr</a>
       <a href="social.php" class="<?php echo ($activeNav ?? '') === 'social' ? 'active' : ''; ?>">🔗 Sosial Şəbəkələr</a>
       <a href="seo.php" class="<?php echo ($activeNav ?? '') === 'seo' ? 'active' : ''; ?>">🔍 SEO</a>

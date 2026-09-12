@@ -36,4 +36,5 @@ echo json_encode([
     'items' => $items,
     'total' => (float)$order['total'],
     'created_at' => $order['created_at'],
+    'reviewed' => (bool)sg_get_review($id),
 ], JSON_UNESCAPED_UNICODE);

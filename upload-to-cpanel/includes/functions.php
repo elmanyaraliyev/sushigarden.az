@@ -296,6 +296,71 @@ function sg_save_sound_upload($fileArray, $maxBytes = 2097152) {
     return 'uploads/sounds/' . $filename;
 }
 
+/**
+ * Qalereya şəklini uploads/gallery/-a saxlayır (loqo yükləməsi ilə eyni
+ * GD-based kiçiltmə məntiqi). Nisbi yol qaytarır ("uploads/gallery/xxx.jpg").
+ */
+function sg_save_gallery_upload($fileArray, $maxW = 1400) {
+    if (empty($fileArray) || !isset($fileArray['tmp_name']) || $fileArray['error'] !== UPLOAD_ERR_OK) {
+        return null;
+    }
+    $binary = @file_get_contents($fileArray['tmp_name']);
+    if ($binary === false) return null;
+
+    $dir = SG_ROOT . '/uploads/gallery';
+    if (!sg_ensure_writable_dir($dir)) {
+        error_log('Sushi Garden: uploads/gallery qovluğu yazıla bilmir: ' . $dir);
+        return null;
+    }
+
+    $filename = 'g' . time() . '_' . substr(bin2hex(random_bytes(4)), 0, 8) . '.jpg';
+    $path = $dir . '/' . $filename;
+
+    $written = false;
+    $img = @imagecreatefromstring($binary);
+    if ($img) {
+        $w = imagesx($img);
+        $h = imagesy($img);
+        if ($w > $maxW) {
+            $newH = (int)round($h * ($maxW / $w));
+            $resized = imagecreatetruecolor($maxW, $newH);
+            imagecopyresampled($resized, $img, 0, 0, 0, 0, $maxW, $newH, $w, $h);
+            imagedestroy($img);
+            $img = $resized;
+        }
+        $written = @imagejpeg($img, $path, 88);
+        imagedestroy($img);
+    }
+    if (!$written) {
+        $written = @file_put_contents($path, $binary) !== false;
+    }
+    if (!$written || !is_file($path)) {
+        error_log('Sushi Garden: qalereya şəkli diskə yazıla bilmədi: ' . $path);
+        return null;
+    }
+    @chmod($path, 0644);
+    return 'uploads/gallery/' . $filename;
+}
+
+function sg_get_gallery_items($activeOnly = false) {
+    $pdo = sg_db();
+    $sql = 'SELECT * FROM gallery_items' . ($activeOnly ? ' WHERE active = 1' : '') . ' ORDER BY sort_order ASC, id ASC';
+    return $pdo->query($sql)->fetchAll(PDO::FETCH_ASSOC);
+}
+
+function sg_delete_gallery_item($id) {
+    $pdo = sg_db();
+    $stmt = $pdo->prepare('SELECT image FROM gallery_items WHERE id = ?');
+    $stmt->execute([$id]);
+    $image = $stmt->fetchColumn();
+    if ($image) {
+        $path = SG_ROOT . '/' . $image;
+        if (is_file($path)) @unlink($path);
+    }
+    $del = $pdo->prepare('DELETE FROM gallery_items WHERE id = ?');
+    return $del->execute([$id]);
+}
+
 function sg_delete_product_image($filename) {
     if (!$filename) return;
     $path = SG_UPLOADS_DIR . '/' . $filename;

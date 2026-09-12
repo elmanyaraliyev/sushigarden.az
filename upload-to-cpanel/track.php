@@ -58,6 +58,7 @@ $needsReviewPrompt = $valid && $order['status'] === 'completed' && !$existingRev
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Playfair+Display:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css?v=<?php echo (int)@filemtime(__DIR__ . '/css/style.css'); ?>">
 <script src="js/notify-sounds.js"></script>
+<script src="js/order-watcher.js?v=<?php echo (int)@filemtime(__DIR__ . '/js/order-watcher.js'); ?>" defer></script>
 <style>
   .track-wrap{max-width:640px; margin:0 auto; padding:70px 24px 90px;}
   .track-card{background:var(--bg-raised); border:1px solid var(--line); border-radius:16px; padding:2.2rem; box-shadow:var(--shadow);}
@@ -104,34 +105,6 @@ $needsReviewPrompt = $valid && $order['status'] === 'completed' && !$existingRev
     transition:border-color .15s, color .15s;
   }
   .track-repeat-mini:hover{border-color:var(--accent); color:var(--accent);}
-
-  .review-popup-overlay{
-    position:fixed; inset:0; z-index:400; display:none;
-    align-items:center; justify-content:center; padding:20px;
-    background:rgba(0,0,0,.6);
-  }
-  .review-popup-overlay.show{display:flex;}
-  .review-popup-card{
-    background:var(--bg-raised); border:1px solid var(--line); border-radius:16px;
-    padding:2rem; max-width:380px; width:100%; text-align:center; box-shadow:var(--shadow);
-    animation:sg-review-pop .4s cubic-bezier(.34,1.56,.64,1);
-  }
-  @keyframes sg-review-pop{0%{transform:scale(.85); opacity:0;} 100%{transform:scale(1); opacity:1;}}
-  .review-popup-icon{font-size:2.6rem; margin-bottom:.4rem;}
-  .review-popup-card h3{font-family:'Playfair Display',serif; font-size:1.35rem; margin-bottom:.4rem;}
-  .review-popup-card p{color:var(--text-soft); font-size:.9rem; margin-bottom:1rem;}
-  .review-stars{font-size:2.2rem; letter-spacing:.15em; margin-bottom:1rem; cursor:pointer;}
-  .review-stars span{color:var(--line); transition:color .15s, transform .15s;}
-  .review-stars span.filled{color:var(--gold);}
-  .review-stars span:hover{transform:scale(1.15);}
-  .review-popup-card textarea{
-    width:100%; padding:.65rem .8rem; border-radius:6px; border:1px solid var(--line);
-    background:var(--bg); color:var(--text); font-size:.9rem; font-family:inherit;
-    resize:vertical; min-height:3em; margin-bottom:1rem;
-  }
-  .review-popup-actions{display:flex; gap:.6rem;}
-  .review-popup-actions .btn{flex:1; justify-content:center;}
-  .review-thanks{color:var(--accent); font-weight:700; padding:1rem 0;}
 </style>
 </head>
 <body style="background:var(--bg);">
@@ -389,6 +362,7 @@ $needsReviewPrompt = $valid && $order['status'] === 'completed' && !$existingRev
         if (!data.ok) return;
         if (data.status !== lastStatus) {
           lastStatus = data.status;
+          if (typeof window.sgMarkOrderStatusSeen === 'function') window.sgMarkOrderStatusSeen(orderId, data.status);
           if (data.status === 'cancelled') { window.location.reload(); return; }
           applyStatus(data.status);
           if (data.status === 'completed') {

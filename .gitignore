@@ -5,9 +5,11 @@ upload-to-cpanel/data/*.sqlite
 upload-to-cpanel/uploads/products/*
 upload-to-cpanel/uploads/branding/*
 upload-to-cpanel/uploads/sounds/*
+upload-to-cpanel/uploads/gallery/*
 !upload-to-cpanel/uploads/products/.gitkeep
 !upload-to-cpanel/uploads/branding/.gitkeep
 !upload-to-cpanel/uploads/sounds/.gitkeep
+!upload-to-cpanel/uploads/gallery/.gitkeep
 
 # Yükləmə paketləri (endirilmiş update zip-ləri) — bunlar kod deyil, çıxarılan artefaktlardır
 *.zip
