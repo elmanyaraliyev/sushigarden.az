@@ -123,7 +123,10 @@ function sgUnlockScroll() {
     document.body.style.top = '';
     document.body.style.left = '';
     document.body.style.right = '';
-    window.scrollTo(0, sgScrollLockY);
+    // "behavior:'instant'" mütləqdir — sayt hər yerdə hamar scroll (CSS
+    // scroll-behavior:smooth) istifadə edir, onsuz mövqeyi bərpa etmək
+    // sanki səhifə yenidən yuxarıdan aşağı yüklənirmiş kimi görünürdü.
+    window.scrollTo({ top: sgScrollLockY, left: 0, behavior: 'instant' });
   }
 }
 

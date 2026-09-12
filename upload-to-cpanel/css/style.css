@@ -93,7 +93,7 @@ html.sg-scroll-lock, html.sg-scroll-lock body{
 }
 
 *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
-html{scroll-behavior:smooth;}
+html{scroll-behavior:smooth; background:var(--bg);}
 /* Mobil brauzerlərin standart mavi "toxunma" flaşı əvəzinə hər yerdə eyni
    premium 3D-basma hissi: yüngül kiçilmə + kölgənin "batması". Bütün əsas
    toxunulan elementlər buna qoşulur (aşağıda selektor siyahısına baxın). */
@@ -720,7 +720,16 @@ footer{
   perspective:1200px;
 }
 .product-modal.open{opacity:1; pointer-events:auto;}
-.product-modal-backdrop{position:absolute; inset:0; background:rgba(0,0,0,.6);}
+/* Məhsul pəncərəsi açılanda arxa fondakı bütün sayt yumşaq şəkildə
+   bulanıqlaşır ("motion blur" hissi), bağlananda normala qayıdır. */
+.product-modal-backdrop{
+  position:absolute; inset:0; background:rgba(0,0,0,.6);
+  backdrop-filter:blur(0px); -webkit-backdrop-filter:blur(0px);
+  transition:backdrop-filter .35s ease, -webkit-backdrop-filter .35s ease;
+}
+.product-modal.open .product-modal-backdrop{
+  backdrop-filter:blur(9px); -webkit-backdrop-filter:blur(9px);
+}
 /* "Glow Up / Glow Down" — məhsul üzərinə toxunanda pəncərə premium 3D
    "böyüyərək açılma" effekti ilə gəlir (yüngül geriyə sıçrayış + qızılı
    parıltı), bağlananda eyni keçidlə tərsinə "kiçilib itir". */
