@@ -348,16 +348,30 @@ function sg_save_gallery_upload($fileArray, $maxW = 1400) {
  * ona görə qalereya şəkillərindən fərqli olaraq daha geniş ölçüdə saxlanılır.
  */
 function sg_save_theme_bg_upload($fileArray, $maxW = 1920) {
-    if (empty($fileArray) || !isset($fileArray['tmp_name']) || $fileArray['error'] !== UPLOAD_ERR_OK) {
-        return null;
+    if (empty($fileArray) || !isset($fileArray['tmp_name'])) {
+        return ['ok' => false, 'reason' => 'Şəkil seçilmədi.'];
+    }
+    if ($fileArray['error'] !== UPLOAD_ERR_OK) {
+        // UPLOAD_ERR_INI_SIZE/FORM_SIZE — fayl serverin icazə verdiyi maksimum ölçüdən
+        // böyükdür; bu halda PHP faylı $_FILES-ə heç qoymur, admin isə "heç nə baş
+        // vermədi" görür — ona görə səbəbi konkret izah edirik.
+        $reasons = [
+            UPLOAD_ERR_INI_SIZE => 'Şəkil serverin icazə verdiyi maksimum ölçüdən böyükdür (php.ini upload_max_filesize). Şəkli sıxışdırıb (məs. 2-3 MB-dan az) yenidən sınayın.',
+            UPLOAD_ERR_FORM_SIZE => 'Şəkil çox böyükdür. Daha kiçik ölçüdə şəkil seçin.',
+            UPLOAD_ERR_PARTIAL => 'Şəkil tam yüklənmədi, internet bağlantısı kəsilmiş ola bilər. Yenidən cəhd edin.',
+            UPLOAD_ERR_NO_FILE => 'Şəkil seçilmədi.',
+        ];
+        return ['ok' => false, 'reason' => $reasons[$fileArray['error']] ?? ('Yükləmə xətası (kodu ' . h((string)$fileArray['error']) . ').')];
     }
     $binary = @file_get_contents($fileArray['tmp_name']);
-    if ($binary === false) return null;
+    if ($binary === false || strlen($binary) < 10) {
+        return ['ok' => false, 'reason' => 'Müvəqqəti fayl oxuna bilmədi (server müvəqqəti qovluq problemi ola bilər).'];
+    }
 
     $dir = SG_ROOT . '/uploads/theme-bg';
     if (!sg_ensure_writable_dir($dir)) {
         error_log('Sushi Garden: uploads/theme-bg qovluğu yazıla bilmir: ' . $dir);
-        return null;
+        return ['ok' => false, 'reason' => '"uploads/theme-bg" qovluğu yazıla bilmir (icazə problemi). cPanel → File Manager-də bu qovluğun icazəsini 755 (olmasa 775) edin.'];
     }
 
     $filename = 't' . time() . '_' . substr(bin2hex(random_bytes(4)), 0, 8) . '.jpg';
@@ -382,11 +396,12 @@ function sg_save_theme_bg_upload($fileArray, $maxW = 1920) {
         $written = @file_put_contents($path, $binary) !== false;
     }
     if (!$written || !is_file($path)) {
-        error_log('Sushi Garden: tema fon şəkli diskə yazıla bilmədi: ' . $path);
-        return null;
+        $err = error_get_last();
+        error_log('Sushi Garden: tema fon şəkli diskə yazıla bilmədi: ' . $path . ' — ' . ($err['message'] ?? ''));
+        return ['ok' => false, 'reason' => 'Şəkil diskə yazıla bilmədi (disk yeri dolu ola bilər, ya da hostinqin icazələri buna mane olur).'];
     }
     @chmod($path, 0644);
-    return 'uploads/theme-bg/' . $filename;
+    return ['ok' => true, 'file' => 'uploads/theme-bg/' . $filename];
 }
 
 function sg_delete_theme_bg($key) {

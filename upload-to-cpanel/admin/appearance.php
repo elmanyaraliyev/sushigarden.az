@@ -28,15 +28,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
 
         if ($action === 'save_theme_bg') {
-            if (!empty($_FILES['theme_bg_sakura']['tmp_name'])) {
-                $path = sg_save_theme_bg_upload($_FILES['theme_bg_sakura']);
-                if ($path) {
-                    sg_delete_theme_bg('theme_bg_sakura');
-                    sg_set_setting('theme_bg_sakura', $path);
-                    $_SESSION['flash_ok'] = 'Sakura fon şəkli yükləndi.';
-                } else {
-                    $_SESSION['flash_err'] = 'Fon şəkli yüklənmədi. JPG/PNG formatında sınayın.';
-                }
+            $result = sg_save_theme_bg_upload($_FILES['theme_bg_sakura'] ?? null);
+            if ($result['ok']) {
+                sg_delete_theme_bg('theme_bg_sakura');
+                sg_set_setting('theme_bg_sakura', $result['file']);
+                $_SESSION['flash_ok'] = 'Sakura fon şəkli yükləndi.';
+            } else {
+                $_SESSION['flash_err'] = $result['reason'];
             }
             header('Location: appearance.php');
             exit;
