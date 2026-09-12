@@ -99,14 +99,32 @@ var SG_STRINGS = {
 
 // Səbət və ya məhsul pəncərəsi açıq olanda arxa fondakı əsas səhifənin
 // scroll olunmasının qarşısını alır (ikisi eyni anda açıla bilər deyə sayğacla).
+// Sadə "overflow:hidden" üsulu bəzi mobil brauzerlərdə (xüsusən iOS Safari)
+// kilidi açanda səhifəni ən yuxarı qaytarırdı (istifadəçinin harda olduğunu
+// unudurdu) — ona görə scroll mövqeyini özümüz yadda saxlayıb bərpa edirik.
 var sgScrollLockCount = 0;
+var sgScrollLockY = 0;
 function sgLockScroll() {
+  if (sgScrollLockCount === 0) {
+    sgScrollLockY = window.scrollY || document.documentElement.scrollTop || 0;
+    document.body.style.position = 'fixed';
+    document.body.style.top = (-sgScrollLockY) + 'px';
+    document.body.style.left = '0';
+    document.body.style.right = '0';
+  }
   sgScrollLockCount++;
   document.documentElement.classList.add('sg-scroll-lock');
 }
 function sgUnlockScroll() {
   sgScrollLockCount = Math.max(0, sgScrollLockCount - 1);
-  if (sgScrollLockCount === 0) document.documentElement.classList.remove('sg-scroll-lock');
+  if (sgScrollLockCount === 0) {
+    document.documentElement.classList.remove('sg-scroll-lock');
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.left = '';
+    document.body.style.right = '';
+    window.scrollTo(0, sgScrollLockY);
+  }
 }
 
 document.addEventListener('DOMContentLoaded', function () {

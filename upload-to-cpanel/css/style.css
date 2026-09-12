@@ -746,18 +746,15 @@ footer{
   transition:transform .15s ease;
 }
 .product-modal-close:active{transform:scale(.88);}
+/* Sabit 4:3 qutu real şəkillərin nisbətinə (adətən 16:9-a yaxın, daha enli)
+   uyğun gəlmirdi və üstdə/altda boş rəngli zolaqlar yaradırdı (hər ölçüdə,
+   təkcə mobildə deyil) — indi qutu şəklin öz təbii ölçüsünə uyğunlaşır,
+   heç bir boş sahə qalmır. */
 .product-modal-media{
-  width:100%; aspect-ratio:4/3; background:var(--bg);
-  display:flex; align-items:center; justify-content:center; overflow:hidden;
+  width:100%; display:flex; align-items:center; justify-content:center; overflow:hidden;
 }
-.product-modal-media img{width:100%; height:100%; object-fit:contain;}
-.product-modal-media .ph{font-size:5rem; opacity:.5;}
-/* Mobildə sabit 4:3 qutu şəklin öz nisbətinə uyğun gəlmədikdə üstdə/altda boş
-   zolaqlar yaradırdı — mobildə qutunu şəklin öz təbii ölçüsünə buraxırıq. */
-@media (max-width:600px){
-  .product-modal-media{aspect-ratio:auto; background:none;}
-  .product-modal-media img{width:100%; height:auto; max-height:60vh; object-fit:contain;}
-}
+.product-modal-media img{width:100%; height:auto; max-height:60vh; object-fit:contain; display:block;}
+.product-modal-media .ph{font-size:5rem; opacity:.5; padding:2.5rem 0;}
 .product-modal-body{padding:1.6rem 1.6rem 1.8rem;}
 .product-modal-body h3{font-family:'Cormorant Garamond',serif; font-size:1.4rem; margin:0 0 .6rem;}
 .product-modal-body p{color:var(--text-soft); font-size:.96rem; margin:0 0 1.3rem;}
