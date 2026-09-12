@@ -8,24 +8,27 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $errors[] = 'Səhifə köhnəlib, yenidən cəhd edin.';
     } else {
         $action = $_POST['action'] ?? '';
-        if ($action === 'reset_completed_sound') {
-            sg_set_setting('customer_completed_sound', '');
-            $_SESSION['flash_ok'] = 'Standart səsə qaytarıldı.';
-            header('Location: notifications.php');
-            exit;
-        }
-        if ($action === 'upload_completed_sound') {
-            if (empty($_FILES['completed_sound']['tmp_name'])) {
-                $errors[] = 'Fayl seçilmədi.';
-            } else {
-                $path = sg_save_sound_upload($_FILES['completed_sound']);
+        if ($action === 'save_completed_sound') {
+            $type = $_POST['completed_sound_type'] ?? 'bundled';
+            if (!array_key_exists($type, sg_sound_presets())) $type = 'bundled';
+
+            if ($type === 'custom' && !empty($_FILES['completed_sound_file']['tmp_name'])) {
+                $path = sg_save_sound_upload($_FILES['completed_sound_file']);
                 if ($path) {
                     sg_set_setting('customer_completed_sound', $path);
-                    $_SESSION['flash_ok'] = 'Müştəri "sifariş tamamlandı" səsi yeniləndi.';
-                    header('Location: notifications.php');
-                    exit;
+                } else {
+                    $errors[] = 'Fayl yüklənmədi — MP3/WAV/OGG formatında və maksimum 2 MB olmalıdır.';
                 }
-                $errors[] = 'Fayl yüklənmədi — MP3/WAV/OGG formatında və maksimum 2 MB olmalıdır.';
+            }
+            if ($type === 'custom' && !sg_setting('customer_completed_sound', '') && empty($_FILES['completed_sound_file']['tmp_name'])) {
+                $errors[] = '"Öz səsim" seçmisiniz, amma fayl yükləməmisiniz.';
+            }
+
+            if (!$errors) {
+                sg_set_setting('customer_completed_sound_type', $type);
+                $_SESSION['flash_ok'] = 'Müştəri "sifariş tamamlandı" səsi yeniləndi.';
+                header('Location: notifications.php');
+                exit;
             }
         }
     }
@@ -36,80 +39,79 @@ $pageTitle = 'Bildirişlər';
 $activeNav = 'notifications';
 require __DIR__ . '/includes/header.php';
 
-$completedSoundCustom = sg_setting('customer_completed_sound', '');
+$presets = sg_sound_presets();
+$completedType = sg_setting('customer_completed_sound_type', 'bundled');
+$completedCustomFile = sg_setting('customer_completed_sound', '');
 ?>
 <?php foreach ($errors as $e): ?><div class="flash err"><?php echo h($e); ?></div><?php endforeach; ?>
 
-<div class="panel" style="max-width:560px;">
-  <div class="panel-head"><h2>Admin — yeni sifariş bildiriş səsi</h2></div>
+<div class="panel sound-picker" style="max-width:560px;">
+  <div class="panel-head"><h2>🔔 Admin — yeni sifariş bildiriş səsi</h2></div>
   <p style="color:var(--text-soft); font-size:.88rem; margin-top:-.6rem; margin-bottom:1rem;">
     Yeni sifariş daxil olanda admin paneldə (hansı səhifədə olmağınızdan asılı olmayaraq) bu səs çalınacaq.
     Seçim bu brauzerdə yadda saxlanılır.
   </p>
-  <div class="sound-options" id="sound-options">
-    <label><input type="radio" name="sg_sound" value="chime"> Zəng (üçlü)</label>
-    <label><input type="radio" name="sg_sound" value="beep1"> Bip (tək)</label>
-    <label><input type="radio" name="sg_sound" value="beep2"> Bip (ikili)</label>
-    <label><input type="radio" name="sg_sound" value="bundled"> Restoran zəngi</label>
-    <label><input type="radio" name="sg_sound" value="custom"> Öz səsim</label>
-    <label><input type="radio" name="sg_sound" value="none"> Səssiz</label>
+  <div class="sound-options" id="admin-sound-options">
+    <?php foreach ($presets as $val => $label): ?>
+      <label><input type="radio" name="sg_sound" value="<?php echo h($val); ?>"> <?php echo h($label === 'Standart' ? 'Restoran zəngi' : $label); ?></label>
+    <?php endforeach; ?>
   </div>
-  <div id="custom-sound-row" style="margin-top:.8rem; display:none;">
-    <input type="file" id="custom-sound-file" accept="audio/*">
+  <div id="admin-custom-sound-row" style="margin-top:.8rem; display:none;">
+    <input type="file" id="admin-custom-sound-file" accept="audio/*">
     <div style="margin-top:.4rem; font-size:.76rem; opacity:.6; max-width:360px; line-height:1.4;">
       MP3/WAV/OGG fayl seçin (tövsiyə: 2-3 saniyəlik qısa səs, maks. 300 KB — brauzerin yaddaşında saxlanılır).
     </div>
-    <div id="custom-sound-current" style="margin-top:.4rem; font-size:.8rem; color:var(--text-soft);"></div>
+    <div id="admin-custom-sound-current" style="margin-top:.4rem; font-size:.8rem; color:var(--text-soft);"></div>
   </div>
-  <button type="button" class="btn btn-ghost btn-sm" id="sound-test" style="margin-top:1rem;">🔊 Sına</button>
+  <button type="button" class="btn btn-ghost btn-sm sound-test-btn" data-target="admin-sound-options" style="margin-top:1rem;">🔊 Sına</button>
   <p style="color:var(--text-soft); font-size:.82rem; margin-top:1.2rem;">
     Diqqət: başqa bir sekmədə/proqramda olarkən yeni sifariş gələndə brauzerinizdən icazə istənilə bilər
     ("Bildiriş göndərməyə icazə verin?") — mütləq "İcazə ver" seçin ki, fon rejimində də bildiriş görünsün.
   </p>
 </div>
 
-<div class="panel" style="max-width:560px;">
-  <div class="panel-head"><h2>Müştəri — "Sifariş tamamlandı" səsi</h2></div>
+<div class="panel sound-picker" style="max-width:560px;">
+  <div class="panel-head"><h2>🔔 Müştəri — "Sifariş tamamlandı" səsi</h2></div>
   <p style="color:var(--text-soft); font-size:.88rem; margin-top:-.6rem; margin-bottom:1rem;">
     Müştəri öz sifarişini izləyərkən (track.php) siz statusu "Tamamlandı" edən kimi bu səs onun ekranında çalınır.
-    Bütün müştərilər üçün eynidir (serverdə saxlanılır).
+    Bütün müştərilər üçün eynidir (serverdə saxlanılır) — yuxarıdakı bölmə ilə eyni seçim siyahısını paylaşır.
   </p>
-  <div style="display:flex; align-items:center; gap:1rem; flex-wrap:wrap; margin-bottom:1rem;">
-    <audio controls style="height:36px;" src="../<?php echo h($completedSoundCustom ?: 'assets/sounds/order-completed.mp3'); ?>"></audio>
-    <span style="font-size:.82rem; color:var(--text-soft);">
-      <?php echo $completedSoundCustom ? '✓ Öz faylınız aktivdir' : 'Standart səs istifadə olunur'; ?>
-    </span>
-  </div>
-  <form method="post" enctype="multipart/form-data" style="display:flex; gap:.6rem; flex-wrap:wrap; align-items:center;">
+  <form method="post" enctype="multipart/form-data">
     <input type="hidden" name="csrf" value="<?php echo h($csrf); ?>">
-    <input type="hidden" name="action" value="upload_completed_sound">
-    <input type="file" name="completed_sound" accept="audio/mp3,audio/wav,audio/ogg,.mp3,.wav,.ogg" required>
-    <button type="submit" class="btn btn-primary btn-sm">Yüklə</button>
+    <input type="hidden" name="action" value="save_completed_sound">
+    <div class="sound-options" id="completed-sound-options">
+      <?php foreach ($presets as $val => $label): ?>
+        <label><input type="radio" name="completed_sound_type" value="<?php echo h($val); ?>" <?php echo $completedType === $val ? 'checked' : ''; ?>> <?php echo h($label); ?></label>
+      <?php endforeach; ?>
+    </div>
+    <div id="completed-custom-sound-row" style="margin-top:.8rem; display:<?php echo $completedType === 'custom' ? 'block' : 'none'; ?>;">
+      <input type="file" name="completed_sound_file" accept="audio/mp3,audio/wav,audio/ogg,.mp3,.wav,.ogg">
+      <div style="margin-top:.4rem; font-size:.78rem; color:var(--text-soft);">
+        <?php echo $completedCustomFile ? '✓ Öz faylınız aktivdir. Dəyişmək üçün yeni fayl seçin.' : 'MP3/WAV/OGG, maksimum 2 MB.'; ?>
+      </div>
+    </div>
+    <button type="submit" class="btn btn-primary btn-sm" style="margin-top:1rem;">Yadda saxla</button>
+    <button type="button" class="btn btn-ghost btn-sm sound-test-btn" data-target="completed-sound-options" data-bundled-src="../assets/sounds/order-completed.mp3" data-custom-src="<?php echo $completedCustomFile ? h('../' . $completedCustomFile) : ''; ?>">🔊 Sına</button>
   </form>
-  <?php if ($completedSoundCustom): ?>
-    <form method="post" style="margin-top:.6rem;">
-      <input type="hidden" name="csrf" value="<?php echo h($csrf); ?>">
-      <input type="hidden" name="action" value="reset_completed_sound">
-      <button type="submit" class="btn btn-ghost btn-sm">Standart səsə qaytar</button>
-    </form>
-  <?php endif; ?>
-  <p style="color:var(--text-soft); font-size:.78rem; margin-top:1rem;">MP3/WAV/OGG, maksimum 2 MB.</p>
 </div>
 
+<script src="../js/notify-sounds.js"></script>
 <script>
 (function(){
+  // ---- Admin öz bildiriş səsi (localStorage) ----
   var KEY = 'sg_admin_sound';
   var CUSTOM_KEY = 'sg_admin_custom_sound';
-  var radios = document.querySelectorAll('#sound-options input[type=radio]');
-  var customRow = document.getElementById('custom-sound-row');
-  var customFile = document.getElementById('custom-sound-file');
-  var customCurrent = document.getElementById('custom-sound-current');
+  var radios = document.querySelectorAll('#admin-sound-options input[type=radio]');
+  var customRow = document.getElementById('admin-custom-sound-row');
+  var customFile = document.getElementById('admin-custom-sound-file');
+  var customCurrent = document.getElementById('admin-custom-sound-current');
   var current = 'chime';
   try { current = localStorage.getItem(KEY) || 'chime'; } catch (e) {}
   radios.forEach(function(r){ r.checked = (r.value === current); });
 
   function syncCustomRow(){
-    customRow.style.display = (document.querySelector('#sound-options input[value="custom"]').checked) ? 'block' : 'none';
+    var checked = document.querySelector('#admin-sound-options input[value="custom"]');
+    customRow.style.display = (checked && checked.checked) ? 'block' : 'none';
     var hasCustom = false;
     try { hasCustom = !!localStorage.getItem(CUSTOM_KEY); } catch (e) {}
     customCurrent.textContent = hasCustom ? '✓ Öz səsiniz yaddadır.' : 'Hələ heç bir fayl yüklənməyib.';
@@ -137,7 +139,7 @@ $completedSoundCustom = sg_setting('customer_completed_sound', '');
         try {
           localStorage.setItem(CUSTOM_KEY, ev.target.result);
           localStorage.setItem(KEY, 'custom');
-          document.querySelector('#sound-options input[value="custom"]').checked = true;
+          document.querySelector('#admin-sound-options input[value="custom"]').checked = true;
           syncCustomRow();
         } catch (e) {
           alert('Səs yaddaşa yazıla bilmədi (brauzer yaddaşı dola bilər). Daha kiçik fayl sınayın.');
@@ -147,9 +149,41 @@ $completedSoundCustom = sg_setting('customer_completed_sound', '');
     });
   }
 
-  document.getElementById('sound-test').addEventListener('click', function(){
-    var sel = document.querySelector('#sound-options input[type=radio]:checked');
-    if (sel && window.sgPlayAdminSound) window.sgPlayAdminSound(sel.value);
+  // ---- Müştəri "tamamlandı" səsi seçimi (serverə göndərilir) ----
+  var completedRadios = document.querySelectorAll('#completed-sound-options input[type=radio]');
+  var completedCustomRow = document.getElementById('completed-custom-sound-row');
+  completedRadios.forEach(function(r){
+    r.addEventListener('change', function(){
+      completedCustomRow.style.display = (r.value === 'custom') ? 'block' : 'none';
+    });
+  });
+
+  // ---- Hər iki bölmə üçün ortaq "Sına" düyməsi ----
+  // data-bundled-src/data-custom-src olan düymə (müştəri bölməsi) serverdəki
+  // faylı çalır; olmayan (admin bölməsi) window.sgPlayAdminSound-dan istifadə edir.
+  document.querySelectorAll('.sound-test-btn').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var targetId = btn.getAttribute('data-target');
+      var sel = document.querySelector('#' + targetId + ' input[type=radio]:checked');
+      if (!sel) return;
+      var bundledSrc = btn.getAttribute('data-bundled-src');
+      if (sel.value === 'none') return;
+      if (sel.value === 'custom' && bundledSrc) {
+        var customSrc = btn.getAttribute('data-custom-src');
+        if (customSrc) new Audio(customSrc).play().catch(function(){});
+        else alert('Hələ öz səsiniz yüklənməyib.');
+        return;
+      }
+      if (sel.value === 'bundled' && bundledSrc) {
+        new Audio(bundledSrc).play().catch(function(){});
+        return;
+      }
+      if (['chime', 'beep1', 'beep2'].indexOf(sel.value) !== -1) {
+        sgPlayToneSound(sel.value);
+        return;
+      }
+      if (window.sgPlayAdminSound) window.sgPlayAdminSound(sel.value);
+    });
   });
 
   if ('Notification' in window && Notification.permission === 'default') {

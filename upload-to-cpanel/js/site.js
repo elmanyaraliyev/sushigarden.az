@@ -20,8 +20,8 @@ var SG_STRINGS = {
     service_label: 'Xidmət növü', service_delivery: 'Çatdırılma', service_takeaway: 'Özü ilə aparma',
     field_name: 'Adınız', field_name_ph: 'Adınız', field_phone: 'Telefon',
     field_address: 'Ünvan', field_address_ph: 'Çatdırılma ünvanınızı daxil edin...',
-    field_time: 'Nə vaxt hazır olsun?', time_asap: 'Tez bir zamanda (~25 dəqiqə)',
-    time_2h: '2 saat sonra', time_3h: '3 saat sonra', time_5h: '5 saat sonra',
+    field_time: 'Nə vaxt hazır olsun?', time_asap_check: 'Mümkün qədər tez (~25 dəqiqə)',
+    time_today: 'Bu gün', time_tomorrow: 'Sabah',
     field_party: 'Adam sayı (istəyə bağlı)', field_party_ph: 'Neçə nəfərsiniz?',
     field_notes: 'Qeyd (istəyə bağlı)', field_notes_ph: 'Məs. zəng, allergiya, əlavə çubuqlar...',
     place_order: 'Sifarişi yerləşdir', send_whatsapp: 'WhatsApp ilə göndər', clear_cart: 'Təmizlə',
@@ -54,8 +54,8 @@ var SG_STRINGS = {
     service_label: 'Тип обслуживания', service_delivery: 'Доставка', service_takeaway: 'С собой',
     field_name: 'Ваше имя', field_name_ph: 'Ваше имя', field_phone: 'Телефон',
     field_address: 'Адрес', field_address_ph: 'Введите адрес доставки...',
-    field_time: 'Когда приготовить?', time_asap: 'Как можно скорее (~25 минут)',
-    time_2h: 'Через 2 часа', time_3h: 'Через 3 часа', time_5h: 'Через 5 часов',
+    field_time: 'Когда приготовить?', time_asap_check: 'Как можно скорее (~25 минут)',
+    time_today: 'Сегодня', time_tomorrow: 'Завтра',
     field_party: 'Количество человек (необязательно)', field_party_ph: 'Сколько человек?',
     field_notes: 'Примечание (необязательно)', field_notes_ph: 'Напр. позвонить, аллергия, доп. палочки...',
     place_order: 'Оформить заказ', send_whatsapp: 'Отправить через WhatsApp', clear_cart: 'Очистить',
@@ -88,8 +88,8 @@ var SG_STRINGS = {
     service_label: 'Service Type', service_delivery: 'Delivery', service_takeaway: 'Takeaway',
     field_name: 'Your Name', field_name_ph: 'Your Name', field_phone: 'Phone',
     field_address: 'Address', field_address_ph: 'Enter your delivery address...',
-    field_time: 'When should it be ready?', time_asap: 'As soon as possible (~25 min)',
-    time_2h: 'In 2 hours', time_3h: 'In 3 hours', time_5h: 'In 5 hours',
+    field_time: 'When should it be ready?', time_asap_check: 'As soon as possible (~25 min)',
+    time_today: 'Today', time_tomorrow: 'Tomorrow',
     field_party: 'Number of people (optional)', field_party_ph: 'How many people?',
     field_notes: 'Notes (optional)', field_notes_ph: 'E.g. call on arrival, allergy, extra chopsticks...',
     place_order: 'Place Order', send_whatsapp: 'Send via WhatsApp', clear_cart: 'Clear',
@@ -392,7 +392,28 @@ document.addEventListener('DOMContentLoaded', function () {
   var loggedInPhone = document.body.getAttribute('data-customer-phone') || '';
   if (custName && loggedInName) custName.value = loggedInName;
   if (custPhone && loggedInPhone) custPhone.value = loggedInPhone;
-  var custTime = document.getElementById('cust-time');
+  var custAsap = document.getElementById('cust-asap');
+  var custTimeManual = document.getElementById('cust-time-manual');
+  var custTimeDate = document.getElementById('cust-time-date');
+  var custTimeHour = document.getElementById('cust-time-hour');
+  var custTimeMinute = document.getElementById('cust-time-minute');
+  if (custAsap && custTimeManual) {
+    custAsap.addEventListener('change', function () {
+      custTimeManual.style.display = custAsap.checked ? 'none' : 'flex';
+    });
+  }
+  function getRequestedTime() {
+    if (!custAsap || custAsap.checked) return 'asap';
+    var now = new Date();
+    var target = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    if (custTimeDate && custTimeDate.value === 'tomorrow') target.setDate(target.getDate() + 1);
+    var hh = custTimeHour ? parseInt(custTimeHour.value, 10) : 0;
+    var mm = custTimeMinute ? parseInt(custTimeMinute.value, 10) : 0;
+    target.setHours(hh, mm, 0, 0);
+    var pad = function (n) { return (n < 10 ? '0' : '') + n; };
+    return target.getFullYear() + '-' + pad(target.getMonth() + 1) + '-' + pad(target.getDate())
+      + ' ' + pad(target.getHours()) + ':' + pad(target.getMinutes()) + ':00';
+  }
   var custParty = document.getElementById('cust-party');
   var custNotes = document.getElementById('cust-notes');
   var orderError = document.getElementById('order-error');
@@ -534,7 +555,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (custName) custName.value = loggedInName || '';
     if (custPhone) custPhone.value = loggedInPhone || '';
     if (custAddress) custAddress.value = '';
-    if (custTime) custTime.value = 'asap';
+    if (custAsap) { custAsap.checked = true; if (custTimeManual) custTimeManual.style.display = 'none'; }
     if (custParty) custParty.value = '';
     if (custNotes) custNotes.value = '';
     currentTip = 0;
@@ -605,7 +626,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
       placeOrderBtn.disabled = true;
       var items = ids.map(function (id) { return { id: parseInt(id, 10), qty: cart[id].qty }; });
-      var timeChoice = custTime ? custTime.value : 'asap';
+      var timeChoice = getRequestedTime();
       var partySize = custParty && custParty.value ? custParty.value : '';
       var notes = custNotes ? custNotes.value.trim() : '';
 

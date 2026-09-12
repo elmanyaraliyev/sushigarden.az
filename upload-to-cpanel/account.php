@@ -75,7 +75,10 @@ $orders = sg_customer_orders($customer['id']);
         <h1>Salam, <?php echo h($customer['name']); ?></h1>
         <p><?php echo h($customer['phone']); ?></p>
       </div>
-      <a href="logout.php" class="btn btn-ghost btn-sm">Çıxış</a>
+      <a href="logout.php" class="btn btn-ghost btn-sm" style="display:inline-flex; align-items:center; gap:.4rem;">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        Çıxış
+      </a>
     </div>
 
     <div class="track-section" style="border-top:1px solid var(--line); padding-top:1.2rem;">

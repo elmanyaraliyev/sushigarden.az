@@ -57,6 +57,18 @@ $seoKeywords = sg_setting('seo_keywords', '');
 </div>
 
 <div class="panel" style="max-width:680px;">
+  <div class="panel-head"><h2>Kateqoriya və məhsullar üçün SEO</h2></div>
+  <p style="color:var(--text-soft); font-size:.9rem; line-height:1.7;">
+    Sayt tək səhifə olduğu üçün hər məhsulun ayrıca linki (URL) yoxdur — ona görə "hər məhsul üçün ayrıca başlıq/təsvir"
+    mənasında SEO tətbiq edilə bilmir. Bunun əvəzinə, bütün kateqoriyalar və məhsullar (ad, təsvir, qiymət)
+    <strong>avtomatik olaraq</strong> Google-ın "Menu" strukturlaşdırılmış datasına (schema.org) əlavə olunur —
+    bu, Google-a menyunuzun tam məzmununu göstərir və axtarış nəticələrində menyu kimi görünmə şansını artırır.
+    Əlavə iş görmək lazım deyil: Menyu/Kateqoriyalar bölmələrindəki AZ adı və təsviri artıq bunun üçün istifadə olunur —
+    daha aydın, açar-söz zəngin adlar/təsvirlər yazmaq (məs. sadəcə "Set 1" yox, "Klassik Sushi Seti") SEO-ya birbaşa kömək edir.
+  </p>
+</div>
+
+<div class="panel" style="max-width:680px;">
   <div class="panel-head"><h2>Əlavə tövsiyələr</h2></div>
   <p style="color:var(--text-soft); font-size:.9rem; line-height:1.7;">
     Sayt texniki tərəfdən artıq hazırdır: strukturlaşdırılmış data (Restaurant schema), robots.txt, sitemap.xml.

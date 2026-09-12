@@ -35,6 +35,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $_SESSION['flash_ok'] = count($ids) . ' sifariş silindi.';
     }
 
+    if ($action === 'reset_sequence') {
+        if (sg_reset_order_sequence()) {
+            $_SESSION['flash_ok'] = 'Sifariş nömrələməsi sıfırlandı — növbəti sifariş #1 olacaq.';
+        } else {
+            $_SESSION['flash_err'] = 'Nömrələmə sıfırlana bilmədi — hələ silinməmiş sifarişlər var.';
+        }
+    }
+
     header('Location: orders.php' . (isset($_GET['status']) ? '?status=' . urlencode($_GET['status']) : ''));
     exit;
 }
@@ -69,6 +77,13 @@ require __DIR__ . '/includes/header.php';
   <div class="panel-head"><h2><?php echo count($orders); ?> sifariş</h2></div>
   <?php if (!$orders): ?>
     <p class="empty-note">Hələ sifariş yoxdur.</p>
+    <?php if ($total === 0): ?>
+      <form method="post" onsubmit="return confirm('Sifariş nömrələnməsini sıfırlamaq istədiyinizə əminsiniz? Növbəti sifariş #1 olacaq.');">
+        <input type="hidden" name="action" value="reset_sequence">
+        <input type="hidden" name="csrf" value="<?php echo h($csrf); ?>">
+        <button type="submit" class="btn btn-ghost btn-sm">Sifariş nömrələnməsini sıfırla (#1-dən başlasın)</button>
+      </form>
+    <?php endif; ?>
   <?php else: ?>
     <table>
       <thead>

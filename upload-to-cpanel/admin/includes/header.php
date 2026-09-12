@@ -24,6 +24,7 @@ $sg_pendingOrders = (int)sg_db()->query("SELECT COUNT(*) FROM orders WHERE statu
       <a href="dashboard.php" class="<?php echo ($activeNav ?? '') === 'dashboard' ? 'active' : ''; ?>">📊 İdarə paneli</a>
       <a href="orders.php" class="<?php echo ($activeNav ?? '') === 'orders' ? 'active' : ''; ?>">🧾 Sifarişlər<?php echo $sg_pendingOrders ? ' <span class="nav-badge">' . $sg_pendingOrders . '</span>' : ''; ?></a>
       <a href="customers.php" class="<?php echo in_array($activeNav ?? '', ['customers', 'customer-view'], true) ? 'active' : ''; ?>">👥 İstifadəçilər</a>
+      <a href="reviews.php" class="<?php echo ($activeNav ?? '') === 'reviews' ? 'active' : ''; ?>">⭐ Rəylər</a>
       <a href="restaurant.php" class="<?php echo ($activeNav ?? '') === 'restaurant' ? 'active' : ''; ?>">🏠 Restoran</a>
       <a href="appearance.php" class="<?php echo ($activeNav ?? '') === 'appearance' ? 'active' : ''; ?>">🎨 Görünüş</a>
       <a href="categories.php" class="<?php echo ($activeNav ?? '') === 'categories' ? 'active' : ''; ?>">📂 Kateqoriyalar</a>

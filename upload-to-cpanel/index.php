@@ -64,6 +64,29 @@ $restaurantSchema = [
 if ($openingHours) $restaurantSchema['openingHoursSpecification'] = $openingHours;
 if ($sameAs) $restaurantSchema['sameAs'] = $sameAs;
 if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
+
+// Google-ın menyunu birbaşa axtarış nəticələrində ("Menu" rich result) göstərə bilməsi
+// üçün hər kateqoriya/məhsulu strukturlaşdırılmış data kimi də veririk — sayt tək
+// səhifə olduğundan (hər məhsulun ayrıca URL-i yoxdur) SEO-nu bu şəkildə tətbiq edirik.
+$menuSections = [];
+foreach ($catsWithItems as $cat) {
+    $menuItems = [];
+    foreach ($cat['products'] as $p) {
+        $menuItems[] = [
+            '@type' => 'MenuItem',
+            'name' => $p['name'],
+            'description' => $p['description'] ?: '',
+            'offers' => ['@type' => 'Offer', 'price' => (string)$p['price'], 'priceCurrency' => 'AZN'],
+        ];
+    }
+    $menuSections[] = ['@type' => 'MenuSection', 'name' => $cat['name'], 'hasMenuItem' => $menuItems];
+}
+$menuSchema = [
+    '@context' => 'https://schema.org',
+    '@type' => 'Menu',
+    'name' => $restaurantName . ' — Menyu',
+    'hasMenuSection' => $menuSections,
+];
 ?>
 <!doctype html>
 <html lang="az" data-color-theme="<?php echo h($colorTheme); ?>">
@@ -95,6 +118,9 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Playfair+Display:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css?v=<?php echo (int)@filemtime(__DIR__ . '/css/style.css'); ?>">
 <script type="application/ld+json"><?php echo json_encode($restaurantSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?></script>
+<?php if ($menuSections): ?>
+<script type="application/ld+json"><?php echo json_encode($menuSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?></script>
+<?php endif; ?>
 <script>document.documentElement.classList.add('js');</script>
 </head>
 <body data-wa-phone="<?php echo h($phoneWa); ?>" data-csrf="<?php echo h($csrf); ?>" data-customer-name="<?php echo h($customer['name'] ?? ''); ?>" data-customer-phone="<?php echo h($customer['phone'] ?? ''); ?>">
@@ -145,10 +171,10 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
     </div>
     <div class="nav-actions">
       <?php if ($customer): ?>
-        <a class="nav-phone nav-orders-desktop" href="account.php">👤 <?php echo h($customer['name']); ?></a>
+        <a class="nav-phone nav-orders-desktop" href="account.php">👤 <span class="nav-actions-label"><?php echo h($customer['name']); ?></span></a>
       <?php else: ?>
-        <a class="nav-phone my-orders-link nav-orders-desktop" href="track.php">📦 <span data-i18n="my_orders">Sifarişim</span></a>
-        <a class="nav-phone nav-orders-desktop" href="login.php">🔑 <span data-i18n="nav_login">Giriş</span></a>
+        <a class="nav-phone my-orders-link nav-orders-desktop" href="track.php">📦 <span class="nav-actions-label" data-i18n="my_orders">Sifarişim</span></a>
+        <a class="nav-phone nav-orders-desktop" href="login.php">🔑 <span class="nav-actions-label" data-i18n="nav_login">Giriş</span></a>
       <?php endif; ?>
       <a class="nav-phone" href="tel:+<?php echo h($phoneWa); ?>"><?php echo h($phoneDisplay); ?></a>
     </div>
@@ -425,12 +451,27 @@ if ($mapsUrl && $mapsUrl !== '#') $restaurantSchema['hasMap'] = $mapsUrl;
 
         <div class="field-block">
           <label data-i18n="field_time">Nə vaxt hazır olsun?</label>
-          <select id="cust-time">
-            <option value="asap" data-i18n="time_asap">Tez bir zamanda (~25 dəqiqə)</option>
-            <option value="2h" data-i18n="time_2h">2 saat sonra</option>
-            <option value="3h" data-i18n="time_3h">3 saat sonra</option>
-            <option value="5h" data-i18n="time_5h">5 saat sonra</option>
-          </select>
+          <label class="checkbox-row" style="margin-bottom:.7rem;">
+            <input type="checkbox" id="cust-asap" checked>
+            <span data-i18n="time_asap_check">Mümkün qədər tez (~25 dəqiqə)</span>
+          </label>
+          <div id="cust-time-manual" class="time-manual-row" style="display:none;">
+            <select id="cust-time-date">
+              <option value="today" data-i18n="time_today">Bu gün</option>
+              <option value="tomorrow" data-i18n="time_tomorrow">Sabah</option>
+            </select>
+            <select id="cust-time-hour">
+              <?php for ($h = 0; $h < 24; $h++): ?>
+                <option value="<?php echo sprintf('%02d', $h); ?>"><?php echo sprintf('%02d', $h); ?></option>
+              <?php endfor; ?>
+            </select>
+            <select id="cust-time-minute">
+              <option value="00">00</option>
+              <option value="15">15</option>
+              <option value="30">30</option>
+              <option value="45">45</option>
+            </select>
+          </div>
         </div>
         <div class="field-block">
           <label data-i18n="field_party">Adam sayı (istəyə bağlı)</label>

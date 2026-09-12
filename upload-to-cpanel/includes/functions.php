@@ -488,11 +488,19 @@ function sg_create_order($data, $rawItems) {
         return ['ok' => false, 'errors' => $errors];
     }
 
-    // Nə vaxt hazır olsun: "tez bir zamanda" (minimum 25 dəqiqə) və ya 2/3/5 saat sonraya sifariş
-    $timeChoice = $data['requested_time'] ?? 'asap';
-    $minutesMap = ['asap' => 25, '2h' => 120, '3h' => 180, '5h' => 300];
-    $minutes = $minutesMap[$timeChoice] ?? 25;
-    $requestedTime = date('Y-m-d H:i:s', time() + $minutes * 60);
+    // Nə vaxt hazır olsun: "mümkün qədər tez" (minimum 25 dəqiqə) və ya müştərinin özünün
+    // seçdiyi konkret tarix/saat ("YYYY-MM-DD HH:MM:SS" formatında göndərilir).
+    $timeChoice = (string)($data['requested_time'] ?? 'asap');
+    $asapTime = time() + 25 * 60;
+    if ($timeChoice === 'asap') {
+        $requestedTime = date('Y-m-d H:i:s', $asapTime);
+    } else {
+        $ts = strtotime($timeChoice);
+        // Keçmişə və ya 20 dəqiqədən yaxın vaxta sifariş qəbul edilmir — belə olarsa "tez bir zamanda"ya düşür.
+        $requestedTime = ($ts !== false && $ts >= time() + 20 * 60)
+            ? date('Y-m-d H:i:s', $ts)
+            : date('Y-m-d H:i:s', $asapTime);
+    }
 
     $trackToken = bin2hex(random_bytes(12));
     $customerId = isset($data['customer_id']) ? (int)$data['customer_id'] : null;
@@ -556,4 +564,59 @@ function sg_delete_order($id) {
     $pdo = sg_db();
     $stmt = $pdo->prepare('DELETE FROM orders WHERE id = ?');
     return $stmt->execute([$id]);
+}
+
+/**
+ * Sifariş nömrələməsini sıfırlayır — YALNIZ bütün sifarişlər silindikdən sonra
+ * mənalıdır (əks halda növbəti sifariş yenə MAX(id)+1 alacaq).
+ */
+function sg_reset_order_sequence() {
+    $pdo = sg_db();
+    $count = (int)$pdo->query('SELECT COUNT(*) FROM orders')->fetchColumn();
+    if ($count > 0) return false;
+    $pdo->exec("DELETE FROM sqlite_sequence WHERE name = 'orders'");
+    $pdo->exec("DELETE FROM sqlite_sequence WHERE name = 'order_items'");
+    return true;
+}
+
+/**
+ * Bildiriş səs seçimləri — admin öz sifariş bildirişi VƏ müştərinin "sifariş
+ * tamamlandı" bildirişi eyni bu siyahıdan seçim edir (iki fərqli admin
+ * panel bölməsi bir-birindən asılı olmadan görünsə də, eyni mənbədən gəlir).
+ */
+function sg_sound_presets() {
+    return [
+        'chime' => 'Zəng (üçlü)',
+        'beep1' => 'Bip (tək)',
+        'beep2' => 'Bip (ikili)',
+        'bundled' => 'Standart',
+        'custom' => 'Öz səsim',
+        'none' => 'Səssiz',
+    ];
+}
+
+function sg_get_review($orderId) {
+    $pdo = sg_db();
+    $stmt = $pdo->prepare('SELECT * FROM reviews WHERE order_id = ?');
+    $stmt->execute([$orderId]);
+    return $stmt->fetch(PDO::FETCH_ASSOC) ?: null;
+}
+
+function sg_save_review($orderId, $customerId, $rating, $comment) {
+    $rating = max(1, min(5, (int)$rating));
+    $comment = trim((string)$comment);
+    $pdo = sg_db();
+    $stmt = $pdo->prepare('INSERT OR IGNORE INTO reviews (order_id, customer_id, rating, comment) VALUES (?, ?, ?, ?)');
+    $stmt->execute([$orderId, $customerId, $rating, $comment]);
+    return $stmt->rowCount() > 0;
+}
+
+function sg_get_reviews() {
+    $pdo = sg_db();
+    return $pdo->query("
+        SELECT r.*, o.customer_name, o.customer_phone, o.created_at AS order_created_at
+        FROM reviews r
+        JOIN orders o ON o.id = r.order_id
+        ORDER BY r.id DESC
+    ")->fetchAll(PDO::FETCH_ASSOC);
 }

@@ -79,6 +79,18 @@ function sg_migrate(PDO $pdo) {
     }
 
     $pdo->exec("
+        CREATE TABLE IF NOT EXISTS reviews (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            order_id INTEGER NOT NULL UNIQUE,
+            customer_id INTEGER NULL,
+            rating INTEGER NOT NULL,
+            comment TEXT NOT NULL DEFAULT '',
+            created_at TEXT NOT NULL DEFAULT (datetime('now')),
+            FOREIGN KEY(order_id) REFERENCES orders(id) ON DELETE CASCADE
+        );
+    ");
+
+    $pdo->exec("
         CREATE TABLE IF NOT EXISTS customers (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             name TEXT NOT NULL,
@@ -134,6 +146,8 @@ function sg_migrate(PDO $pdo) {
             'seo_title' => 'Sushi Garden — Bakıda Suşi Restoranı | Onlayn Sifariş və Çatdırılma',
             'seo_description' => 'Sushi Garden — Bakıda təzə suşi, sushi roll, hot roll, burrito və noodles. Onlayn sifariş, sürətli çatdırılma, özü aparma və restoranda yemək seçimi.',
             'seo_keywords' => 'sushi, sushi garden, suşi bakı, sushi baku, sushi sifarişi, sushi çatdırılma, yapon mətbəxi bakı, sushi roll, hot roll, sushi bar',
+            'customer_completed_sound_type' => 'bundled',
+            'customer_completed_sound' => '',
         ];
         $insSetting = $pdo->prepare('INSERT OR IGNORE INTO site_settings (k, v) VALUES (?, ?)');
         foreach ($defaults as $k => $v) {

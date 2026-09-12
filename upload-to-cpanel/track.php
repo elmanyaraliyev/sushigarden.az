@@ -5,7 +5,8 @@ $restaurantName = sg_setting('restaurant_name', 'Sushi Garden');
 $logoIconCustom = sg_setting('logo_icon', '');
 $phoneWa = sg_setting('phone_wa', defined('SG_PHONE_WA') ? SG_PHONE_WA : '');
 $colorTheme = sg_setting('color_theme', 'forest');
-$completedSoundUrl = sg_setting('customer_completed_sound', '') ?: 'assets/sounds/order-completed.mp3';
+$completedSoundType = sg_setting('customer_completed_sound_type', 'bundled');
+$completedSoundFile = sg_setting('customer_completed_sound', '');
 
 $id = (int)($_GET['id'] ?? 0);
 $token = (string)($_GET['t'] ?? '');
@@ -43,6 +44,8 @@ if ($valid && $order['service_type'] === 'delivery') {
 $stepKeys = array_keys($steps);
 $currentIndex = $valid ? array_search($order['status'], $stepKeys, true) : false;
 $isCancelled = $valid && $order['status'] === 'cancelled';
+$existingReview = $valid ? sg_get_review($order['id']) : null;
+$needsReviewPrompt = $valid && $order['status'] === 'completed' && !$existingReview;
 ?>
 <!doctype html>
 <html lang="az" data-color-theme="<?php echo h($colorTheme); ?>">
@@ -54,6 +57,7 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
 <link rel="icon" href="<?php echo h(sg_favicon_url()); ?>" type="image/jpeg">
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;1,600&family=Playfair+Display:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css?v=<?php echo (int)@filemtime(__DIR__ . '/css/style.css'); ?>">
+<script src="js/notify-sounds.js"></script>
 <style>
   .track-wrap{max-width:640px; margin:0 auto; padding:70px 24px 90px;}
   .track-card{background:var(--bg-raised); border:1px solid var(--line); border-radius:16px; padding:2.2rem; box-shadow:var(--shadow);}
@@ -100,6 +104,34 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
     transition:border-color .15s, color .15s;
   }
   .track-repeat-mini:hover{border-color:var(--accent); color:var(--accent);}
+
+  .review-popup-overlay{
+    position:fixed; inset:0; z-index:400; display:none;
+    align-items:center; justify-content:center; padding:20px;
+    background:rgba(0,0,0,.6);
+  }
+  .review-popup-overlay.show{display:flex;}
+  .review-popup-card{
+    background:var(--bg-raised); border:1px solid var(--line); border-radius:16px;
+    padding:2rem; max-width:380px; width:100%; text-align:center; box-shadow:var(--shadow);
+    animation:sg-review-pop .4s cubic-bezier(.34,1.56,.64,1);
+  }
+  @keyframes sg-review-pop{0%{transform:scale(.85); opacity:0;} 100%{transform:scale(1); opacity:1;}}
+  .review-popup-icon{font-size:2.6rem; margin-bottom:.4rem;}
+  .review-popup-card h3{font-family:'Playfair Display',serif; font-size:1.35rem; margin-bottom:.4rem;}
+  .review-popup-card p{color:var(--text-soft); font-size:.9rem; margin-bottom:1rem;}
+  .review-stars{font-size:2.2rem; letter-spacing:.15em; margin-bottom:1rem; cursor:pointer;}
+  .review-stars span{color:var(--line); transition:color .15s, transform .15s;}
+  .review-stars span.filled{color:var(--gold);}
+  .review-stars span:hover{transform:scale(1.15);}
+  .review-popup-card textarea{
+    width:100%; padding:.65rem .8rem; border-radius:6px; border:1px solid var(--line);
+    background:var(--bg); color:var(--text); font-size:.9rem; font-family:inherit;
+    resize:vertical; min-height:3em; margin-bottom:1rem;
+  }
+  .review-popup-actions{display:flex; gap:.6rem;}
+  .review-popup-actions .btn{flex:1; justify-content:center;}
+  .review-thanks{color:var(--accent); font-weight:700; padding:1rem 0;}
 </style>
 </head>
 <body style="background:var(--bg);">
@@ -200,9 +232,89 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
   </div>
 </div>
 
-<?php if ($valid && !$isCancelled): ?>
+<?php if ($valid): ?>
+<div class="review-popup-overlay" id="review-popup">
+  <div class="review-popup-card" id="review-popup-card">
+    <div class="review-popup-icon">🎉</div>
+    <h3>Sifarişiniz tamamlandı!</h3>
+    <p>Necə idi? Rəyinizi bildirin:</p>
+    <div class="review-stars" id="review-stars">
+      <span data-star="1">★</span><span data-star="2">★</span><span data-star="3">★</span><span data-star="4">★</span><span data-star="5">★</span>
+    </div>
+    <textarea id="review-comment" placeholder="Qeyd (istəyə bağlı)"></textarea>
+    <div class="review-popup-actions">
+      <button type="button" class="btn btn-ghost" id="review-skip">Bağla</button>
+      <button type="button" class="btn btn-primary" id="review-submit">Göndər</button>
+    </div>
+  </div>
+</div>
+<?php endif; ?>
+
+<?php if ($valid): ?>
 <script>
 (function(){
+  // ---- Rəy pəncərəsi: 5 ulduzlu qiymətləndirmə + qeyd ----
+  var orderId = <?php echo (int)$order['id']; ?>;
+  var orderToken = <?php echo json_encode($order['track_token']); ?>;
+  var popup = document.getElementById('review-popup');
+  var starsWrap = document.getElementById('review-stars');
+  var stars = starsWrap ? starsWrap.querySelectorAll('span') : [];
+  var commentEl = document.getElementById('review-comment');
+  var submitBtn = document.getElementById('review-submit');
+  var skipBtn = document.getElementById('review-skip');
+  var selectedRating = 0;
+
+  function paintStars(n){
+    stars.forEach(function(s){
+      s.classList.toggle('filled', parseInt(s.getAttribute('data-star'), 10) <= n);
+    });
+  }
+  stars.forEach(function(s){
+    s.addEventListener('mouseenter', function(){ paintStars(parseInt(s.getAttribute('data-star'), 10)); });
+    s.addEventListener('click', function(){ selectedRating = parseInt(s.getAttribute('data-star'), 10); paintStars(selectedRating); });
+  });
+  if (starsWrap) starsWrap.addEventListener('mouseleave', function(){ paintStars(selectedRating); });
+
+  function showReviewPopup(){
+    if (!popup) return;
+    popup.classList.add('show');
+  }
+  function hideReviewPopup(){
+    if (popup) popup.classList.remove('show');
+  }
+  if (skipBtn) skipBtn.addEventListener('click', hideReviewPopup);
+  if (submitBtn) {
+    submitBtn.addEventListener('click', function(){
+      if (!selectedRating) { alert('Zəhmət olmasa ulduz seçin.'); return; }
+      submitBtn.disabled = true;
+      fetch('review.php', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: orderId, t: orderToken, rating: selectedRating, comment: commentEl ? commentEl.value.trim() : '' })
+      })
+        .then(function(r){ return r.json(); })
+        .then(function(data){
+          submitBtn.disabled = false;
+          if (data.ok) {
+            document.getElementById('review-popup-card').innerHTML = '<div class="review-thanks">✓ Rəyiniz üçün təşəkkür edirik!</div>';
+            setTimeout(hideReviewPopup, 1800);
+          } else {
+            alert(data.error || 'Xəta baş verdi.');
+          }
+        })
+        .catch(function(){ submitBtn.disabled = false; });
+    });
+  }
+
+  <?php if ($needsReviewPrompt): ?>
+  setTimeout(showReviewPopup, 900);
+  <?php endif; ?>
+
+  <?php if ($isCancelled): ?>
+  return;
+  <?php endif; ?>
+
+  // ---- Status izləmə (polling) ----
   var stepKeys = <?php echo json_encode($stepKeys); ?>;
   var stepper = document.getElementById('track-stepper');
   var lastStatus = <?php echo json_encode($order['status']); ?>;
@@ -234,6 +346,42 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
     } catch (e) {}
   }
 
+  // Müştəri "tamamlandı" səsi — hər iki admin bölməsi ilə eyni ton generatorunu
+  // (js/notify-sounds.js) paylaşır; "bundled"/"custom" real fayl çalır.
+  var completedSoundType = <?php echo json_encode($completedSoundType); ?>;
+  var completedSoundFile = <?php echo json_encode($completedSoundFile); ?>;
+  function playCompletedSound(){
+    if (completedSoundType === 'none') return;
+    if (completedSoundType === 'bundled') {
+      try { new Audio('assets/sounds/order-completed.mp3').play().catch(function(){}); } catch (e) {}
+      return;
+    }
+    if (completedSoundType === 'custom' && completedSoundFile) {
+      try { new Audio(completedSoundFile).play().catch(function(){}); } catch (e) {}
+      return;
+    }
+    if (typeof sgPlayToneSound === 'function') sgPlayToneSound(completedSoundType);
+  }
+
+  var originalTitle = document.title;
+  var titleFlashTimer = null;
+  function startTitleFlash(){
+    stopTitleFlash();
+    var on = false;
+    titleFlashTimer = setInterval(function(){
+      document.title = on ? originalTitle : '✅ Sifariş tamamlandı!';
+      on = !on;
+    }, 1000);
+  }
+  function stopTitleFlash(){
+    if (titleFlashTimer) { clearInterval(titleFlashTimer); titleFlashTimer = null; document.title = originalTitle; }
+  }
+  document.addEventListener('visibilitychange', function(){ if (!document.hidden) stopTitleFlash(); });
+
+  if ('Notification' in window && Notification.permission === 'default') {
+    Notification.requestPermission().catch(function(){});
+  }
+
   function poll(){
     fetch('track-status.php?id=<?php echo (int)$order['id']; ?>&t=<?php echo h($order['track_token']); ?>')
       .then(function(r){ return r.json(); })
@@ -244,7 +392,21 @@ $isCancelled = $valid && $order['status'] === 'cancelled';
           if (data.status === 'cancelled') { window.location.reload(); return; }
           applyStatus(data.status);
           if (data.status === 'completed') {
-            try { new Audio(<?php echo json_encode($completedSoundUrl); ?>).play().catch(function(){}); } catch (e) {}
+            playCompletedSound();
+            showReviewPopup();
+            if (document.hidden) {
+              startTitleFlash();
+              if ('Notification' in window && Notification.permission === 'granted') {
+                try {
+                  var n = new Notification('✅ Sifariş tamamlandı — <?php echo h($restaurantName); ?>', {
+                    body: 'Sifariş #<?php echo (int)$order['id']; ?> hazırdır!',
+                    icon: '<?php echo h(sg_favicon_url()); ?>',
+                    tag: 'sg-order-completed'
+                  });
+                  n.onclick = function(){ window.focus(); };
+                } catch (e) {}
+              }
+            }
           } else {
             playPing();
           }
