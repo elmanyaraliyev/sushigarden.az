@@ -137,7 +137,7 @@ $menuSchema = [
 <?php endif; ?>
 <script>document.documentElement.classList.add('js');</script>
 </head>
-<body data-wa-phone="<?php echo h($phoneWa); ?>" data-csrf="<?php echo h($csrf); ?>" data-customer-name="<?php echo h($customer['name'] ?? ''); ?>" data-customer-phone="<?php echo h($customer['phone'] ?? ''); ?>"<?php if ($themeBgSakura): ?> class="has-theme-bg" style="--theme-bg-image:url('<?php echo h($themeBgSakura); ?>');"<?php endif; ?>>
+<body data-wa-phone="<?php echo h($phoneWa); ?>" data-csrf="<?php echo h($csrf); ?>" data-customer-name="<?php echo h($customer['name'] ?? ''); ?>" data-customer-phone="<?php echo h($customer['phone'] ?? ''); ?>"<?php if ($themeBgSakura): ?> style="--theme-bg-image:url('<?php echo h($themeBgSakura); ?>');"<?php endif; ?>>
 
 <header>
   <nav class="nav">

@@ -61,15 +61,19 @@
 }
 /* Açıq temalarda səhifə fonundakı su işarəsi naxışı da isti çəhrayı/qızılı
    tonlara keçir (tünd temalardakı yaşıl/qızılı yarpaq naxışı əvəzinə). */
-:root[data-color-theme="sakura"] body,
 :root[data-color-theme="beige"] body,
 :root[data-color-theme="rosegold"] body{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='170' height='170'%3E%3Cg%3E%3Cpath d='M28 130C25 92 42 68 58 58 50 80 56 102 68 114 51 119 34 126 28 130Z' fill='%23B76E79' fill-opacity='0.08'/%3E%3Cpath d='M132 148C122 114 130 84 149 68 142 91 149 114 165 128 147 131 137 141 132 148Z' fill='%23C9A15A' fill-opacity='0.08'/%3E%3Cpath d='M95 34C92 16 102 3 115 0 110 13 114 26 123 33 110 35 100 34 95 34Z' fill='%23B76E79' fill-opacity='0.07'/%3E%3Cpath d='M45 20C41 8 47 -1 57 -3 54 6 57 14 63 19 54 21 48 20 45 20Z' fill='%23C9A15A' fill-opacity='0.06'/%3E%3C/g%3E%3C/svg%3E");
 }
-/* Sakura teması üçün admin öz fon şəklini yükləyibsə (bax: admin/appearance.php),
-   yuxarıdakı təkrarlanan naxış əvəzinə tam-eninə, sabit "hero" fon şəkli göstərilir. */
-:root[data-color-theme="sakura"] body.has-theme-bg{
-  background-image:linear-gradient(rgba(251,243,236,.72), rgba(251,243,236,.86)), var(--theme-bg-image);
+/* Sakura teması: kiçik təkrarlanan naxış YOXDUR — sadə, zərif hiss üçün
+   birbaşa Yaponiya mənzərəsi (əsas fon, tünd elementlərin üstündə) sabit "hero"
+   şəkli kimi göstərilir. Admin öz şəklini yükləsə (admin/appearance.php),
+   --theme-bg-image həmin şəkli əvəz edir; yükləməyibsə, bu bundle olunmuş
+   defolt şəkil istifadə olunur. */
+:root[data-color-theme="sakura"] body{
+  background-image:
+    linear-gradient(rgba(251,243,236,.55), rgba(251,243,236,.72)),
+    var(--theme-bg-image, url('../assets/theme-bg-sakura.jpg'));
   background-size:cover; background-position:center top; background-repeat:no-repeat; background-attachment:fixed;
 }
 

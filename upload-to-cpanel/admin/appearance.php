@@ -165,8 +165,9 @@ document.querySelectorAll('.theme-swatch input[type="radio"]').forEach(function 
 <div class="panel" style="max-width:640px;">
   <div class="panel-head"><h2>Sakura teması fon şəkli</h2></div>
   <p style="color:var(--text-soft); font-size:.88rem; margin-top:-.4rem;">
-    "Sakura (Yaponiya)" teması seçildikdə saytın fonunda göstəriləcək öz şəkliniz
-    (məs. göndərdiyiniz mənzərə) — yüklənməzsə, standart naxış görünür.
+    "Sakura (Yaponiya)" teması seçildikdə saytın fonunda göstəriləcək şəkil —
+    yükləməsəniz, standart Yaponiya mənzərəsi (paqoda + Fuji dağı) istifadə olunur,
+    öz şəklinizi yükləsəniz o əvəzinə göstərilir.
   </p>
   <div class="img-preview-row">
     <?php if (sg_setting('theme_bg_sakura')): ?>
