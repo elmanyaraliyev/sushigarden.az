@@ -74,7 +74,11 @@
   background-image:
     linear-gradient(rgba(251,243,236,.55), rgba(251,243,236,.72)),
     var(--theme-bg-image, url('../assets/theme-bg-sakura.jpg'));
-  background-size:cover; background-position:center top; background-repeat:no-repeat; background-attachment:fixed;
+  background-size:cover; background-position:center top; background-repeat:no-repeat;
+  /* QEYD: "background-attachment:fixed" qəsdən İSTİFADƏ OLUNMUR — mobil
+     brauzerlərdə (xüsusən ünvan zolağı gizlənib-çıxdıqca) bu, görünüş
+     ölçüsünün "oynamasına" və scroll zamanı donmaya səbəb olur. */
+  background-attachment:scroll;
 }
 
 /* Səbət/məhsul pəncərəsi açıq olanda arxa fondakı səhifənin scroll olunmasının
@@ -96,13 +100,15 @@ html{scroll-behavior:smooth;}
 .btn, .menu-tabs button, .nav-links button, .nav-links a, .time-choice-pill,
 .add, .js-add-to-cart, button[data-act],
 .lang-trigger, .lang-option, #cart-pill{
-  transition:transform .12s ease, box-shadow .12s ease, border-color .15s ease, color .15s ease, background .15s ease;
+  transition:transform .1s ease-out, box-shadow .1s ease-out, filter .1s ease-out,
+    border-color .15s ease, color .15s ease, background .15s ease;
 }
 .btn:active, .menu-tabs button:active, .nav-links button:active, .nav-links a:active,
 .time-choice-pill:active, .add:active, .js-add-to-cart:active,
 button[data-act]:active, .lang-trigger:active, .lang-option:active, #cart-pill:active{
-  transform:scale(.94);
-  box-shadow:inset 0 2px 6px rgba(0,0,0,.18);
+  transform:scale(.93) translateY(1px);
+  box-shadow:inset 0 3px 8px rgba(0,0,0,.28), inset 0 1px 3px rgba(0,0,0,.18);
+  filter:brightness(.95);
 }
 @media (prefers-reduced-motion: reduce){ html{scroll-behavior:auto;} *{animation-duration:.001ms !important; transition-duration:.001ms !important;} }
 
@@ -290,7 +296,6 @@ header.scrolled .nav{padding:11px 28px;}
   border:1px solid transparent; cursor:pointer;
   transition:transform .12s ease, background .15s ease, border-color .15s ease;
 }
-.btn:active{transform:translateY(1px);}
 .btn-primary{background:var(--accent); color:var(--ink);}
 .btn-primary:hover{background:var(--accent-deep);}
 .btn-ghost{background:transparent; border-color:var(--line); color:var(--text);}
@@ -317,16 +322,13 @@ header.scrolled .nav{padding:11px 28px;}
   text-decoration:none; font-size:.85rem; font-weight:700; font-family:inherit;
   padding:.6rem 1.3rem; border-radius:999px; border:1.5px solid var(--line);
   background:var(--bg-raised); color:var(--text); cursor:pointer;
-  box-shadow:0 3px 10px -6px rgba(0,0,0,.35);
-  transition:border-color .2s, color .2s, background .2s, box-shadow .2s, transform .15s;
+  transition:border-color .2s, color .2s, background .2s, transform .15s;
   white-space:nowrap; flex-shrink:0;
 }
-.menu-tabs button:hover{border-color:var(--accent); color:var(--accent); transform:translateY(-1px);}
+.menu-tabs button:hover{border-color:var(--accent); color:var(--accent);}
 .menu-tabs button.active{
   background:linear-gradient(135deg, var(--accent), var(--accent-deep));
   border-color:transparent; color:var(--ink);
-  box-shadow:0 8px 18px -8px color-mix(in srgb, var(--accent) 65%, transparent);
-  transform:translateY(-1px);
 }
 @media (max-width:820px){
   .menu-tabs-wrap{position:relative; margin-left:-28px; margin-right:-28px;}
@@ -426,8 +428,8 @@ header.scrolled .nav{padding:11px 28px;}
 }
 .slide-foot{display:flex; align-items:center; gap:1.4rem; flex-wrap:wrap;}
 .slide-foot .price{
-  font-size:1.7rem; font-weight:800; font-family:'Cormorant Garamond',serif; color:var(--gold);
-  text-shadow:0 2px 10px rgba(0,0,0,.5);
+  font-size:1.7rem; font-weight:900; font-family:'Cormorant Garamond',serif; color:#FFC94D;
+  text-shadow:0 2px 12px rgba(0,0,0,.6), 0 0 18px rgba(255,201,77,.35);
 }
 
 .carousel-arrow{
@@ -462,7 +464,7 @@ header.scrolled .nav{padding:11px 28px;}
   /* Oxlar əvəzinə barmaqla sürüşdürmə (swipe) — mobil ekranda daha təbii və
      kifayət qədər yer yoxdur ki, oxlar mətnlə üst-üstə düşmədən sığsın. */
   .carousel-arrow{display:none;}
-  .carousel-dots{position:static; margin:.2rem 0 1rem; padding:0;}
+  .carousel-dots{position:static; margin:.5rem 0 .55rem; padding:0;}
 }
 /* ---------------------------------------------------------------------
  * About Us paneli
@@ -750,6 +752,12 @@ footer{
 }
 .product-modal-media img{width:100%; height:100%; object-fit:contain;}
 .product-modal-media .ph{font-size:5rem; opacity:.5;}
+/* Mobildə sabit 4:3 qutu şəklin öz nisbətinə uyğun gəlmədikdə üstdə/altda boş
+   zolaqlar yaradırdı — mobildə qutunu şəklin öz təbii ölçüsünə buraxırıq. */
+@media (max-width:600px){
+  .product-modal-media{aspect-ratio:auto; background:none;}
+  .product-modal-media img{width:100%; height:auto; max-height:60vh; object-fit:contain;}
+}
 .product-modal-body{padding:1.6rem 1.6rem 1.8rem;}
 .product-modal-body h3{font-family:'Cormorant Garamond',serif; font-size:1.4rem; margin:0 0 .6rem;}
 .product-modal-body p{color:var(--text-soft); font-size:.96rem; margin:0 0 1.3rem;}

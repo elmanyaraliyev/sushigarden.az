@@ -209,6 +209,12 @@ document.addEventListener('DOMContentLoaded', function () {
       btn.addEventListener('click', function () {
         tabBtns.forEach(function (b) { b.classList.toggle('active', b === btn); });
         applyMenuFilter(btn.getAttribute('data-cat'), true);
+        // Mobildə tab sırası üfüqi sürüşdürülür — seçilən kateqoriya küncdə,
+        // yarımçıq görünürsə, özünü mərkəzə doğru sürüşdürərək tam görünən edir
+        // (əl ilə sürüşdürməyə mane olmadan, yalnız seçim anında).
+        if (btn.scrollIntoView) {
+          btn.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+        }
       });
     });
     // ilk yüklənmədə aktiv (ilk) kateqoriyanı göstər
