@@ -25,6 +25,7 @@ $logoIconCustom = sg_setting('logo_icon', '');
 $logoFullCustom = sg_setting('logo_full', '');
 $heroImage = sg_setting('hero_image', '');
 $colorTheme = sg_setting('color_theme', 'forest');
+$themeBgSakura = sg_setting('theme_bg_sakura', '');
 $aboutSubtextAz = sg_setting('about_subtext_az', 'Bakının mərkəzində əl işi suşi təcrübəsi — təbii materiallar, yapon dəqiqliyi və səmimi qonaqpərvərliklə hər gün yenidən hazırlanır.');
 $aboutSubtextRu = sg_setting('about_subtext_ru', '');
 $aboutSubtextEn = sg_setting('about_subtext_en', '');
@@ -136,7 +137,7 @@ $menuSchema = [
 <?php endif; ?>
 <script>document.documentElement.classList.add('js');</script>
 </head>
-<body data-wa-phone="<?php echo h($phoneWa); ?>" data-csrf="<?php echo h($csrf); ?>" data-customer-name="<?php echo h($customer['name'] ?? ''); ?>" data-customer-phone="<?php echo h($customer['phone'] ?? ''); ?>">
+<body data-wa-phone="<?php echo h($phoneWa); ?>" data-csrf="<?php echo h($csrf); ?>" data-customer-name="<?php echo h($customer['name'] ?? ''); ?>" data-customer-phone="<?php echo h($customer['phone'] ?? ''); ?>"<?php if ($themeBgSakura): ?> class="has-theme-bg" style="--theme-bg-image:url('<?php echo h($themeBgSakura); ?>');"<?php endif; ?>>
 
 <header>
   <nav class="nav">
@@ -208,21 +209,20 @@ $menuSchema = [
               <div class="carousel-track" id="carousel-track">
                 <?php foreach ($featured as $p): ?>
                   <div class="carousel-slide">
+                    <div class="slide-media">
+                      <?php if (!empty($p['image'])): ?>
+                        <img src="<?php echo h(SG_UPLOADS_URL . '/' . $p['image']); ?>" alt="<?php echo h($p['name']); ?>" loading="lazy" width="1280" height="720">
+                      <?php else: ?>
+                        <span class="ph">🍣</span>
+                      <?php endif; ?>
+                    </div>
                     <div class="slide-info">
                       <span class="badge" data-i18n="badge_featured">Tövsiyə</span>
                       <h3 class="name" data-i18n-ru="<?php echo h($p['name_ru'] ?? ''); ?>" data-i18n-en="<?php echo h($p['name_en'] ?? ''); ?>"><?php echo h($p['name']); ?></h3>
-                      <?php if (!empty($p['description'])): ?><p class="desc" data-i18n-ru="<?php echo h($p['description_ru'] ?? ''); ?>" data-i18n-en="<?php echo h($p['description_en'] ?? ''); ?>"><?php echo h($p['description']); ?></p><?php endif; ?>
                       <div class="slide-foot">
                         <span class="price"><?php echo sg_money($p['price']); ?></span>
                         <button class="btn btn-primary js-add-to-cart" data-id="<?php echo (int)$p['id']; ?>" data-name="<?php echo h($p['name']); ?>" data-price="<?php echo h($p['price']); ?>" data-i18n="add_to_cart">Səbətə əlavə et</button>
                       </div>
-                    </div>
-                    <div class="slide-media">
-                      <?php if (!empty($p['image'])): ?>
-                        <img src="<?php echo h(SG_UPLOADS_URL . '/' . $p['image']); ?>" alt="<?php echo h($p['name']); ?>" loading="lazy" width="640" height="480">
-                      <?php else: ?>
-                        <span class="ph">🍣</span>
-                      <?php endif; ?>
                     </div>
                   </div>
                 <?php endforeach; ?>
@@ -479,10 +479,16 @@ $menuSchema = [
 
         <div class="field-block">
           <label data-i18n="field_time">Nə vaxt hazır olsun?</label>
-          <label class="checkbox-row" style="margin-bottom:.7rem;">
-            <input type="checkbox" id="cust-asap" checked>
-            <span data-i18n="time_asap_check">Mümkün qədər tez (~25 dəqiqə)</span>
-          </label>
+          <div class="time-choice-row">
+            <label class="time-choice-pill active">
+              <input type="radio" name="cust-time-mode" id="cust-time-asap" value="asap" checked>
+              <span data-i18n="time_asap_choice">Ən tez zamanda</span>
+            </label>
+            <label class="time-choice-pill">
+              <input type="radio" name="cust-time-mode" id="cust-time-custom" value="custom">
+              <span data-i18n="time_custom_choice">Xüsusi vaxt seç</span>
+            </label>
+          </div>
           <div id="cust-time-manual" class="time-manual-row" style="display:none;">
             <select id="cust-time-date">
               <option value="today" data-i18n="time_today">Bu gün</option>

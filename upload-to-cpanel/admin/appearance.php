@@ -27,6 +27,28 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
 
+        if ($action === 'save_theme_bg') {
+            if (!empty($_FILES['theme_bg_sakura']['tmp_name'])) {
+                $path = sg_save_theme_bg_upload($_FILES['theme_bg_sakura']);
+                if ($path) {
+                    sg_delete_theme_bg('theme_bg_sakura');
+                    sg_set_setting('theme_bg_sakura', $path);
+                    $_SESSION['flash_ok'] = 'Sakura fon şəkli yükləndi.';
+                } else {
+                    $_SESSION['flash_err'] = 'Fon şəkli yüklənmədi. JPG/PNG formatında sınayın.';
+                }
+            }
+            header('Location: appearance.php');
+            exit;
+        }
+
+        if ($action === 'remove_theme_bg') {
+            sg_delete_theme_bg('theme_bg_sakura');
+            $_SESSION['flash_ok'] = 'Sakura fon şəkli silindi.';
+            header('Location: appearance.php');
+            exit;
+        }
+
         if (!empty($_FILES['logo_icon']['tmp_name'])) {
             $path = sg_save_branding_upload($_FILES['logo_icon'], 400);
             if ($path) { sg_set_setting('logo_icon', $path); } else { $errors[] = 'Loqo (kiçik) yüklənmədi.'; }
@@ -139,6 +161,34 @@ document.querySelectorAll('.theme-swatch input[type="radio"]').forEach(function 
   });
 });
 </script>
+
+<div class="panel" style="max-width:640px;">
+  <div class="panel-head"><h2>Sakura teması fon şəkli</h2></div>
+  <p style="color:var(--text-soft); font-size:.88rem; margin-top:-.4rem;">
+    "Sakura (Yaponiya)" teması seçildikdə saytın fonunda göstəriləcək öz şəkliniz
+    (məs. göndərdiyiniz mənzərə) — yüklənməzsə, standart naxış görünür.
+  </p>
+  <div class="img-preview-row">
+    <?php if (sg_setting('theme_bg_sakura')): ?>
+      <img src="../<?php echo h(sg_setting('theme_bg_sakura')); ?>" class="img-preview">
+    <?php else: ?>
+      <div class="img-preview" style="display:flex; align-items:center; justify-content:center; font-size:1.4rem;">—</div>
+    <?php endif; ?>
+    <form method="post" enctype="multipart/form-data" style="display:flex; gap:.6rem; align-items:center; flex-wrap:wrap;">
+      <input type="hidden" name="csrf" value="<?php echo h($csrf); ?>">
+      <input type="hidden" name="action" value="save_theme_bg">
+      <input type="file" name="theme_bg_sakura" accept="image/*">
+      <button type="submit" class="btn btn-primary btn-sm">Yüklə</button>
+    </form>
+    <?php if (sg_setting('theme_bg_sakura')): ?>
+      <form method="post" onsubmit="return confirm('Fon şəklini silmək istədiyinizə əminsiniz?');">
+        <input type="hidden" name="csrf" value="<?php echo h($csrf); ?>">
+        <input type="hidden" name="action" value="remove_theme_bg">
+        <button type="submit" class="btn btn-danger btn-sm">Sil</button>
+      </form>
+    <?php endif; ?>
+  </div>
+</div>
 
 <div class="panel" style="max-width:640px;">
   <div class="panel-head"><h2>Sayt linki (QR kod üçün)</h2></div>

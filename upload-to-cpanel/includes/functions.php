@@ -342,6 +342,62 @@ function sg_save_gallery_upload($fileArray, $maxW = 1400) {
     return 'uploads/gallery/' . $filename;
 }
 
+/**
+ * "sakura" teması üçün admin-yüklənə bilən fon şəkli (məs. istifadəçinin öz
+ * göndərdiyi Yaponiya mənzərəsi) — tam-eninə "hero" fon kimi göstərilir,
+ * ona görə qalereya şəkillərindən fərqli olaraq daha geniş ölçüdə saxlanılır.
+ */
+function sg_save_theme_bg_upload($fileArray, $maxW = 1920) {
+    if (empty($fileArray) || !isset($fileArray['tmp_name']) || $fileArray['error'] !== UPLOAD_ERR_OK) {
+        return null;
+    }
+    $binary = @file_get_contents($fileArray['tmp_name']);
+    if ($binary === false) return null;
+
+    $dir = SG_ROOT . '/uploads/theme-bg';
+    if (!sg_ensure_writable_dir($dir)) {
+        error_log('Sushi Garden: uploads/theme-bg qovluğu yazıla bilmir: ' . $dir);
+        return null;
+    }
+
+    $filename = 't' . time() . '_' . substr(bin2hex(random_bytes(4)), 0, 8) . '.jpg';
+    $path = $dir . '/' . $filename;
+
+    $written = false;
+    $img = @imagecreatefromstring($binary);
+    if ($img) {
+        $w = imagesx($img);
+        $h = imagesy($img);
+        if ($w > $maxW) {
+            $newH = (int)round($h * ($maxW / $w));
+            $resized = imagecreatetruecolor($maxW, $newH);
+            imagecopyresampled($resized, $img, 0, 0, 0, 0, $maxW, $newH, $w, $h);
+            imagedestroy($img);
+            $img = $resized;
+        }
+        $written = @imagejpeg($img, $path, 88);
+        imagedestroy($img);
+    }
+    if (!$written) {
+        $written = @file_put_contents($path, $binary) !== false;
+    }
+    if (!$written || !is_file($path)) {
+        error_log('Sushi Garden: tema fon şəkli diskə yazıla bilmədi: ' . $path);
+        return null;
+    }
+    @chmod($path, 0644);
+    return 'uploads/theme-bg/' . $filename;
+}
+
+function sg_delete_theme_bg($key) {
+    $current = sg_setting($key, '');
+    if ($current) {
+        $path = SG_ROOT . '/' . $current;
+        if (is_file($path)) @unlink($path);
+    }
+    sg_set_setting($key, '');
+}
+
 function sg_get_gallery_items($activeOnly = false) {
     $pdo = sg_db();
     $sql = 'SELECT * FROM gallery_items' . ($activeOnly ? ' WHERE active = 1' : '') . ' ORDER BY sort_order ASC, id ASC';
@@ -376,10 +432,13 @@ function sg_delete_product_image($filename) {
  */
 function sg_color_themes() {
     return [
-        'forest' => ['label' => 'Meşə Yaşılı', 'bg' => '#12261A', 'accent' => '#9DB49D', 'gold' => '#C9A96B'],
-        'amber'  => ['label' => 'Narıncı Alov', 'bg' => '#241811', 'accent' => '#E0A458', 'gold' => '#E0A458'],
-        'ocean'  => ['label' => 'Mavi Okean', 'bg' => '#0E1D26', 'accent' => '#6FB3C0', 'gold' => '#8FD0C9'],
-        'sumi'   => ['label' => 'Qırmızı Yaponiya', 'bg' => '#1A1210', 'accent' => '#C1443B', 'gold' => '#D98B60'],
+        'forest'   => ['label' => 'Meşə Yaşılı', 'bg' => '#12261A', 'accent' => '#9DB49D', 'gold' => '#C9A96B'],
+        'amber'    => ['label' => 'Narıncı Alov', 'bg' => '#241811', 'accent' => '#E0A458', 'gold' => '#E0A458'],
+        'ocean'    => ['label' => 'Mavi Okean', 'bg' => '#0E1D26', 'accent' => '#6FB3C0', 'gold' => '#8FD0C9'],
+        'sumi'     => ['label' => 'Qırmızı Yaponiya', 'bg' => '#1A1210', 'accent' => '#C1443B', 'gold' => '#D98B60'],
+        'sakura'   => ['label' => 'Sakura (Yaponiya)', 'bg' => '#FBF3EC', 'accent' => '#C97B90', 'gold' => '#C9A15A'],
+        'beige'    => ['label' => 'Açıq Bej', 'bg' => '#F7F2EA', 'accent' => '#9C7A3E', 'gold' => '#B99457'],
+        'rosegold' => ['label' => 'Rose Gold', 'bg' => '#FBEEEA', 'accent' => '#B76E79', 'gold' => '#D4A373'],
     ];
 }
 
@@ -553,16 +612,17 @@ function sg_create_order($data, $rawItems) {
         return ['ok' => false, 'errors' => $errors];
     }
 
-    // Nə vaxt hazır olsun: "mümkün qədər tez" (minimum 25 dəqiqə) və ya müştərinin özünün
-    // seçdiyi konkret tarix/saat ("YYYY-MM-DD HH:MM:SS" formatında göndərilir).
+    // Nə vaxt hazır olsun: "ən tez zamanda" (minimum 30 dəqiqə) və ya müştərinin özünün
+    // seçdiyi konkret tarix/saat ("YYYY-MM-DD HH:MM:SS" formatında göndərilir). Sifariş
+    // verilən andan ən azı 30 dəqiqə sonraya qədər çatdırma/hazırlıq mümkündür.
     $timeChoice = (string)($data['requested_time'] ?? 'asap');
-    $asapTime = time() + 25 * 60;
+    $asapTime = time() + 30 * 60;
     if ($timeChoice === 'asap') {
         $requestedTime = date('Y-m-d H:i:s', $asapTime);
     } else {
         $ts = strtotime($timeChoice);
-        // Keçmişə və ya 20 dəqiqədən yaxın vaxta sifariş qəbul edilmir — belə olarsa "tez bir zamanda"ya düşür.
-        $requestedTime = ($ts !== false && $ts >= time() + 20 * 60)
+        // Keçmişə və ya 30 dəqiqədən yaxın vaxta sifariş qəbul edilmir — belə olarsa "ən tez zamanda"ya düşür.
+        $requestedTime = ($ts !== false && $ts >= time() + 30 * 60)
             ? date('Y-m-d H:i:s', $ts)
             : date('Y-m-d H:i:s', $asapTime);
     }

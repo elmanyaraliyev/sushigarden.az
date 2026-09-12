@@ -17,7 +17,8 @@ var SG_STRINGS = {
     service_label: 'Xidmət növü', service_delivery: 'Çatdırılma', service_takeaway: 'Özü ilə aparma',
     field_name: 'Adınız', field_name_ph: 'Adınız', field_phone: 'Telefon',
     field_address: 'Ünvan', field_address_ph: 'Çatdırılma ünvanınızı daxil edin...',
-    field_time: 'Nə vaxt hazır olsun?', time_asap_check: 'Mümkün qədər tez (~25 dəqiqə)',
+    field_time: 'Nə vaxt hazır olsun?',
+    time_asap_choice: 'Ən tez zamanda', time_custom_choice: 'Xüsusi vaxt seç',
     time_today: 'Bu gün', time_tomorrow: 'Sabah',
     field_party: 'Adam sayı (istəyə bağlı)', field_party_ph: 'Neçə nəfərsiniz?',
     field_notes: 'Qeyd (istəyə bağlı)', field_notes_ph: 'Məs. zəng, allergiya, əlavə çubuqlar...',
@@ -48,7 +49,8 @@ var SG_STRINGS = {
     service_label: 'Тип обслуживания', service_delivery: 'Доставка', service_takeaway: 'С собой',
     field_name: 'Ваше имя', field_name_ph: 'Ваше имя', field_phone: 'Телефон',
     field_address: 'Адрес', field_address_ph: 'Введите адрес доставки...',
-    field_time: 'Когда приготовить?', time_asap_check: 'Как можно скорее (~25 минут)',
+    field_time: 'Когда приготовить?',
+    time_asap_choice: 'Как можно скорее', time_custom_choice: 'Выбрать время',
     time_today: 'Сегодня', time_tomorrow: 'Завтра',
     field_party: 'Количество человек (необязательно)', field_party_ph: 'Сколько человек?',
     field_notes: 'Примечание (необязательно)', field_notes_ph: 'Напр. позвонить, аллергия, доп. палочки...',
@@ -79,7 +81,8 @@ var SG_STRINGS = {
     service_label: 'Service Type', service_delivery: 'Delivery', service_takeaway: 'Takeaway',
     field_name: 'Your Name', field_name_ph: 'Your Name', field_phone: 'Phone',
     field_address: 'Address', field_address_ph: 'Enter your delivery address...',
-    field_time: 'When should it be ready?', time_asap_check: 'As soon as possible (~25 min)',
+    field_time: 'When should it be ready?',
+    time_asap_choice: 'As soon as possible', time_custom_choice: 'Choose a time',
     time_today: 'Today', time_tomorrow: 'Tomorrow',
     field_party: 'Number of people (optional)', field_party_ph: 'How many people?',
     field_notes: 'Notes (optional)', field_notes_ph: 'E.g. call on arrival, allergy, extra chopsticks...',
@@ -383,18 +386,78 @@ document.addEventListener('DOMContentLoaded', function () {
   var loggedInPhone = document.body.getAttribute('data-customer-phone') || '';
   if (custName && loggedInName) custName.value = loggedInName;
   if (custPhone && loggedInPhone) custPhone.value = loggedInPhone;
-  var custAsap = document.getElementById('cust-asap');
+  var custTimeAsapRadio = document.getElementById('cust-time-asap');
+  var custTimeCustomRadio = document.getElementById('cust-time-custom');
   var custTimeManual = document.getElementById('cust-time-manual');
   var custTimeDate = document.getElementById('cust-time-date');
   var custTimeHour = document.getElementById('cust-time-hour');
   var custTimeMinute = document.getElementById('cust-time-minute');
-  if (custAsap && custTimeManual) {
-    custAsap.addEventListener('change', function () {
-      custTimeManual.style.display = custAsap.checked ? 'none' : 'flex';
-    });
+  var timeConstraintTimer = null;
+  // Sifariş anından ən azı 30 dəqiqə sonraya çatdırma mümkündür (server də bunu
+  // yenidən yoxlayır) — müştəri bundan tez bir saat/dəqiqə seçə bilməsin deyə
+  // uyğun olmayan seçimlər əvvəlcədən deaktiv edilir.
+  var MIN_LEAD_MINUTES = 30;
+  function computeMinSlot() {
+    var min = new Date(Date.now() + MIN_LEAD_MINUTES * 60000);
+    var roundedMinute = Math.ceil(min.getMinutes() / 15) * 15;
+    var hour = min.getHours();
+    if (roundedMinute === 60) { roundedMinute = 0; hour += 1; }
+    var dateOffset = 0;
+    if (hour >= 24) { hour -= 24; dateOffset = 1; }
+    return { dateOffset: dateOffset, hour: hour, minute: roundedMinute };
   }
+  function refreshTimeConstraints() {
+    if (!custTimeDate || !custTimeHour || !custTimeMinute) return;
+    var slot = computeMinSlot();
+    var todayOption = custTimeDate.querySelector('option[value="today"]');
+    if (todayOption) {
+      todayOption.disabled = slot.dateOffset > 0;
+      if (slot.dateOffset > 0 && custTimeDate.value === 'today') custTimeDate.value = 'tomorrow';
+    }
+    var restrictThisDate = (slot.dateOffset === 0 && custTimeDate.value === 'today') ||
+      (slot.dateOffset === 1 && custTimeDate.value === 'tomorrow');
+    var firstEnabledHour = null;
+    Array.prototype.forEach.call(custTimeHour.options, function (opt) {
+      var h = parseInt(opt.value, 10);
+      opt.disabled = restrictThisDate && h < slot.hour;
+      if (!opt.disabled && firstEnabledHour === null) firstEnabledHour = h;
+    });
+    if (restrictThisDate && parseInt(custTimeHour.value, 10) < slot.hour) {
+      custTimeHour.value = (slot.hour < 10 ? '0' : '') + slot.hour;
+    }
+    var selHour = parseInt(custTimeHour.value, 10);
+    var restrictThisHour = restrictThisDate && selHour === slot.hour;
+    var firstEnabledMinute = null;
+    Array.prototype.forEach.call(custTimeMinute.options, function (opt) {
+      var m = parseInt(opt.value, 10);
+      opt.disabled = restrictThisHour && m < slot.minute;
+      if (!opt.disabled && firstEnabledMinute === null) firstEnabledMinute = m;
+    });
+    if (restrictThisHour && parseInt(custTimeMinute.value, 10) < slot.minute && firstEnabledMinute !== null) {
+      custTimeMinute.value = (firstEnabledMinute < 10 ? '0' : '') + firstEnabledMinute;
+    }
+  }
+  function setTimeMode(mode) {
+    var isCustom = mode === 'custom';
+    if (custTimeManual) custTimeManual.style.display = isCustom ? 'flex' : 'none';
+    var asapPill = custTimeAsapRadio ? custTimeAsapRadio.closest('.time-choice-pill') : null;
+    var customPill = custTimeCustomRadio ? custTimeCustomRadio.closest('.time-choice-pill') : null;
+    if (asapPill) asapPill.classList.toggle('active', !isCustom);
+    if (customPill) customPill.classList.toggle('active', isCustom);
+    if (isCustom) {
+      refreshTimeConstraints();
+      if (!timeConstraintTimer) timeConstraintTimer = setInterval(refreshTimeConstraints, 60000);
+    } else if (timeConstraintTimer) {
+      clearInterval(timeConstraintTimer);
+      timeConstraintTimer = null;
+    }
+  }
+  if (custTimeAsapRadio) custTimeAsapRadio.addEventListener('change', function () { if (custTimeAsapRadio.checked) setTimeMode('asap'); });
+  if (custTimeCustomRadio) custTimeCustomRadio.addEventListener('change', function () { if (custTimeCustomRadio.checked) setTimeMode('custom'); });
+  if (custTimeDate) custTimeDate.addEventListener('change', refreshTimeConstraints);
+  if (custTimeHour) custTimeHour.addEventListener('change', refreshTimeConstraints);
   function getRequestedTime() {
-    if (!custAsap || custAsap.checked) return 'asap';
+    if (!custTimeCustomRadio || !custTimeCustomRadio.checked) return 'asap';
     var now = new Date();
     var target = new Date(now.getFullYear(), now.getMonth(), now.getDate());
     if (custTimeDate && custTimeDate.value === 'tomorrow') target.setDate(target.getDate() + 1);
@@ -546,7 +609,7 @@ document.addEventListener('DOMContentLoaded', function () {
     if (custName) custName.value = loggedInName || '';
     if (custPhone) custPhone.value = loggedInPhone || '';
     if (custAddress) custAddress.value = '';
-    if (custAsap) { custAsap.checked = true; if (custTimeManual) custTimeManual.style.display = 'none'; }
+    if (custTimeAsapRadio) { custTimeAsapRadio.checked = true; setTimeMode('asap'); }
     if (custParty) custParty.value = '';
     if (custNotes) custNotes.value = '';
     currentTip = 0;
@@ -673,7 +736,10 @@ document.addEventListener('DOMContentLoaded', function () {
     });
   }
 
-  function openDrawer() { drawer.classList.add('open'); overlay.classList.add('open'); sgLockScroll(); }
+  function openDrawer() {
+    drawer.classList.add('open'); overlay.classList.add('open'); sgLockScroll();
+    if (custTimeCustomRadio && custTimeCustomRadio.checked) refreshTimeConstraints();
+  }
   function closeDrawer() { drawer.classList.remove('open'); overlay.classList.remove('open'); sgUnlockScroll(); }
   pill.addEventListener('click', openDrawer);
   document.getElementById('drawer-close').addEventListener('click', closeDrawer);
