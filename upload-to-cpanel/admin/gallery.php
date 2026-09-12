@@ -12,6 +12,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
     $action = $_POST['action'] ?? '';
 
+    if ($action === 'toggle_section') {
+        $enabled = sg_setting('gallery_enabled', '1') === '1';
+        sg_set_setting('gallery_enabled', $enabled ? '0' : '1');
+        header('Location: gallery.php');
+        exit;
+    }
+
     if ($action === 'add') {
         if (empty($_FILES['image']['tmp_name'])) {
             $errors[] = 'Şəkil seçilmədi.';
@@ -66,11 +73,26 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
 $items = sg_get_gallery_items();
 $csrf = sg_csrf_token();
+$galleryEnabled = sg_setting('gallery_enabled', '1') === '1';
 $pageTitle = 'Qalereya';
 $activeNav = 'gallery';
 require __DIR__ . '/includes/header.php';
 ?>
 <?php foreach ($errors as $e): ?><div class="flash err"><?php echo h($e); ?></div><?php endforeach; ?>
+
+<div class="panel" style="max-width:560px;">
+  <div class="panel-head"><h2>Qalereya bölməsi</h2></div>
+  <p style="color:var(--text-soft); font-size:.88rem; margin-top:-.6rem;">
+    Deaktiv etsəniz, "Qalereya" keçidi saytın menyusundan tamamilə çıxarılır (həm masaüstü, həm mobil).
+  </p>
+  <form method="post">
+    <input type="hidden" name="csrf" value="<?php echo h($csrf); ?>">
+    <input type="hidden" name="action" value="toggle_section">
+    <button type="submit" class="status-pill <?php echo $galleryEnabled ? 'active' : 'hidden'; ?>">
+      <?php echo $galleryEnabled ? 'Aktivdir (saytda görünür)' : 'Deaktivdir (saytda gizlidir)'; ?>
+    </button>
+  </form>
+</div>
 
 <div class="panel" style="max-width:560px;">
   <div class="panel-head"><h2>Yeni şəkil əlavə et</h2></div>
