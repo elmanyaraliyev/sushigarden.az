@@ -131,7 +131,8 @@ require __DIR__ . '/includes/header.php';
           <div>
             <input type="file" id="image-input" accept="image/*">
             <div style="margin-top:.4rem; font-size:.76rem; opacity:.55; max-width:280px; line-height:1.4;">
-              Tövsiyə: kvadrat (1:1) və ya üfüqi (16:9) şəkil, minimum 700px en, JPG və ya PNG formatında,
+              Tövsiyə: kvadrat (1:1), üfüqi (16:9) və ya "Sərbəst" seçimi ilə istənilən ölçüdə
+              (məs. 16:10) şəkil, minimum 700px en, JPG və ya PNG formatında,
               maksimum 20 MB (avtomatik kiçildilir). Şəkil seçəndən sonra kəsmə pəncərəsində formatı seçə bilərsiniz.
             </div>
             <?php if (!empty($product['image'])): ?>
@@ -145,9 +146,10 @@ require __DIR__ . '/includes/header.php';
         </div>
         <div id="cropper-wrap" style="display:none;">
           <div class="crop-area"><img id="crop-target" src="" style="max-width:100%;"></div>
-          <div style="display:flex; gap:.5rem; margin-bottom:.6rem;">
+          <div style="display:flex; gap:.5rem; margin-bottom:.6rem; flex-wrap:wrap;">
             <button type="button" class="btn btn-ghost btn-sm crop-ratio active" data-ratio="1">◻ Kvadrat (1:1)</button>
             <button type="button" class="btn btn-ghost btn-sm crop-ratio" data-ratio="1.7778">▭ Üfüqi (16:9)</button>
+            <button type="button" class="btn btn-ghost btn-sm crop-ratio" data-ratio="free">⛶ Sərbəst (istənilən ölçü)</button>
           </div>
           <button type="button" class="btn btn-ghost btn-sm" id="crop-confirm">✓ Şəkli kəs və təsdiqlə</button>
           <button type="button" class="btn btn-ghost btn-sm" id="crop-cancel">Ləğv et</button>
@@ -317,16 +319,24 @@ require __DIR__ . '/includes/header.php';
   ratioBtns.forEach(function(btn){
     btn.addEventListener('click', function(){
       if (!cropper) return;
-      currentRatio = parseFloat(btn.getAttribute('data-ratio'));
-      cropper.setAspectRatio(currentRatio);
+      var val = btn.getAttribute('data-ratio');
+      // "Sərbəst" — heç bir sabit nisbətə bağlı deyil, admin kəsmə qutusunu əl ilə
+      // istənilən ölçüyə (16:10 və s.) uzada bilər.
+      currentRatio = val === 'free' ? 'free' : parseFloat(val);
+      cropper.setAspectRatio(currentRatio === 'free' ? NaN : currentRatio);
       ratioBtns.forEach(function(b){ b.classList.toggle('active', b === btn); });
     });
   });
 
   document.getElementById('crop-confirm').addEventListener('click', function(){
     if (!cropper) return;
-    var outW = 900, outH = Math.round(outW / currentRatio);
-    var canvas = cropper.getCroppedCanvas({ width: outW, height: outH });
+    var canvas;
+    if (currentRatio === 'free') {
+      canvas = cropper.getCroppedCanvas({ maxWidth: 1600, maxHeight: 1600 });
+    } else {
+      var outW = 900, outH = Math.round(outW / currentRatio);
+      canvas = cropper.getCroppedCanvas({ width: outW, height: outH });
+    }
     canvas.toBlob(function(blob){ setPreviewFromBlob(blob); }, 'image/jpeg', 0.9);
     cropperWrap.style.display = 'none';
     cropper.destroy();
