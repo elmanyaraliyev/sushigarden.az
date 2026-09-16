@@ -16,6 +16,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if ($action === 'add') {
         $username = trim($_POST['username'] ?? '');
         $password = $_POST['password'] ?? '';
+        $perms = array_intersect(array_keys(sg_staff_permissions()), $_POST['permissions'] ?? []);
         if ($username === '') $errors[] = 'İstifadəçi adı boş ola bilməz.';
         if (strlen($password) < 6) $errors[] = 'Şifrə ən azı 6 simvol olmalıdır.';
         if (!$errors) {
@@ -24,13 +25,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             if ($exists->fetchColumn() > 0) {
                 $errors[] = 'Bu istifadəçi adı artıq mövcuddur.';
             } else {
-                $stmt = $pdo->prepare("INSERT INTO admin_users (username, password_hash, role, created_at) VALUES (?, ?, 'staff', datetime('now'))");
-                $stmt->execute([$username, password_hash($password, PASSWORD_DEFAULT)]);
+                $stmt = $pdo->prepare("INSERT INTO admin_users (username, password_hash, role, permissions, created_at) VALUES (?, ?, 'staff', ?, datetime('now'))");
+                $stmt->execute([$username, password_hash($password, PASSWORD_DEFAULT), implode(',', $perms)]);
                 $_SESSION['flash_ok'] = 'Sifariş meneceri hesabı yaradıldı.';
                 header('Location: users.php');
                 exit;
             }
         }
+    }
+
+    if ($action === 'update_permissions') {
+        $id = (int)($_POST['id'] ?? 0);
+        $perms = array_intersect(array_keys(sg_staff_permissions()), $_POST['permissions'] ?? []);
+        $stmt = $pdo->prepare("UPDATE admin_users SET permissions = ? WHERE id = ? AND role = 'staff'");
+        $stmt->execute([implode(',', $perms), $id]);
+        $_SESSION['flash_ok'] = 'Səlahiyyətlər yeniləndi.';
+        header('Location: users.php');
+        exit;
     }
 
     if ($action === 'reset_password') {
@@ -70,9 +81,9 @@ require __DIR__ . '/includes/header.php';
 <div class="panel" style="max-width:520px;">
   <div class="panel-head"><h2>Yeni sifariş meneceri</h2></div>
   <p style="color:var(--text-soft); font-size:.86rem; margin-top:-.6rem;">
-    Bu hesabla giriş edən şəxs YALNIZ "Sifarişlər" bölməsini görür — sifarişləri qəbul edə,
-    ləğv edə və hazır olacağı vaxtı təyin edə bilər. Sayt parametrlərinə, menyuya və digər
-    bölmələrə girişi yoxdur.
+    Bu hesabla giriş edən şəxs həmişə "Sifarişlər" bölməsinə çıxışlıdır — sifarişləri qəbul edə,
+    ləğv edə və hazır olacağı vaxtı təyin edə bilər. Aşağıda seçdiyiniz əlavə səlahiyyətlər olmasa,
+    başqa heç bir bölməyə girişi olmaz — istənilən vaxt "Səlahiyyətlər" sütunundan dəyişə bilərsiniz.
   </p>
   <form method="post">
     <input type="hidden" name="csrf" value="<?php echo h($csrf); ?>">
@@ -84,6 +95,14 @@ require __DIR__ . '/includes/header.php';
     <div class="field">
       <label>Şifrə (ən azı 6 simvol)</label>
       <input type="password" name="password" required>
+    </div>
+    <div class="field">
+      <label>Əlavə səlahiyyətlər (istəyə bağlı)</label>
+      <?php foreach (sg_staff_permissions() as $key => $label): ?>
+        <label class="checkbox-row" style="display:block; margin-bottom:.3rem;">
+          <input type="checkbox" name="permissions[]" value="<?php echo h($key); ?>"> <?php echo h($label); ?>
+        </label>
+      <?php endforeach; ?>
     </div>
     <button type="submit" class="btn btn-primary">Hesab yarat</button>
   </form>
@@ -99,14 +118,28 @@ require __DIR__ . '/includes/header.php';
         <tr>
           <th>İstifadəçi adı</th>
           <th>Yaradılıb</th>
+          <th>Əlavə səlahiyyətlər</th>
           <th style="text-align:right;">Əməliyyat</th>
         </tr>
       </thead>
       <tbody>
-        <?php foreach ($staffUsers as $u): ?>
+        <?php foreach ($staffUsers as $u): $userPerms = array_filter(explode(',', $u['permissions'] ?? '')); ?>
           <tr>
             <td><?php echo h($u['username']); ?></td>
             <td><?php echo h($u['created_at']); ?></td>
+            <td>
+              <form method="post" style="display:flex; flex-direction:column; gap:.25rem;">
+                <input type="hidden" name="action" value="update_permissions">
+                <input type="hidden" name="id" value="<?php echo (int)$u['id']; ?>">
+                <input type="hidden" name="csrf" value="<?php echo h($csrf); ?>">
+                <?php foreach (sg_staff_permissions() as $key => $label): ?>
+                  <label class="checkbox-row" style="display:flex; align-items:center; gap:.35rem; font-size:.82rem;">
+                    <input type="checkbox" name="permissions[]" value="<?php echo h($key); ?>" <?php echo in_array($key, $userPerms, true) ? 'checked' : ''; ?>> <?php echo h($label); ?>
+                  </label>
+                <?php endforeach; ?>
+                <button type="submit" class="btn btn-ghost btn-sm" style="align-self:flex-start; margin-top:.2rem;">Yadda saxla</button>
+              </form>
+            </td>
             <td style="text-align:right;">
               <form method="post" style="display:inline-flex; gap:.4rem; align-items:center; justify-content:flex-end; flex-wrap:wrap;">
                 <input type="hidden" name="action" value="reset_password">

@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-sg_require_owner();
+sg_require_permission('gallery');
 $pdo = sg_db();
 
 $errors = [];

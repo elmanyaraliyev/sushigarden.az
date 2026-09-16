@@ -22,16 +22,24 @@ $sg_pendingOrders = (int)sg_db()->query("SELECT COUNT(*) FROM orders WHERE statu
     </div>
     <nav>
       <a href="orders.php" class="<?php echo ($activeNav ?? '') === 'orders' ? 'active' : ''; ?>">🧾 Sifarişlər<?php echo $sg_pendingOrders ? ' <span class="nav-badge">' . $sg_pendingOrders . '</span>' : ''; ?></a>
+      <?php if (sg_admin_has_permission('products')): ?>
+      <a href="categories.php" class="<?php echo ($activeNav ?? '') === 'categories' ? 'active' : ''; ?>">📂 Kateqoriyalar</a>
+      <a href="products.php" class="<?php echo ($activeNav ?? '') === 'products' ? 'active' : ''; ?>">🍣 Menyu</a>
+      <?php endif; ?>
+      <?php if (sg_admin_has_permission('gallery')): ?>
+      <a href="gallery.php" class="<?php echo ($activeNav ?? '') === 'gallery' ? 'active' : ''; ?>">🖼️ Qalereya</a>
+      <?php endif; ?>
+      <?php if (sg_admin_has_permission('customers')): ?>
+      <a href="customers.php" class="<?php echo in_array($activeNav ?? '', ['customers', 'customer-view'], true) ? 'active' : ''; ?>">👥 İstifadəçilər</a>
+      <?php endif; ?>
+      <?php if (sg_admin_has_permission('reviews')): ?>
+      <a href="reviews.php" class="<?php echo ($activeNav ?? '') === 'reviews' ? 'active' : ''; ?>">⭐ Rəylər</a>
+      <?php endif; ?>
       <?php if (sg_is_owner_admin()): ?>
       <a href="dashboard.php" class="<?php echo ($activeNav ?? '') === 'dashboard' ? 'active' : ''; ?>">📊 İdarə paneli</a>
-      <a href="customers.php" class="<?php echo in_array($activeNav ?? '', ['customers', 'customer-view'], true) ? 'active' : ''; ?>">👥 İstifadəçilər</a>
-      <a href="reviews.php" class="<?php echo ($activeNav ?? '') === 'reviews' ? 'active' : ''; ?>">⭐ Rəylər</a>
       <a href="restaurant.php" class="<?php echo ($activeNav ?? '') === 'restaurant' ? 'active' : ''; ?>">🏠 Restoran</a>
       <a href="about.php" class="<?php echo ($activeNav ?? '') === 'about' ? 'active' : ''; ?>">📖 Haqqımızda</a>
       <a href="appearance.php" class="<?php echo ($activeNav ?? '') === 'appearance' ? 'active' : ''; ?>">🎨 Görünüş</a>
-      <a href="categories.php" class="<?php echo ($activeNav ?? '') === 'categories' ? 'active' : ''; ?>">📂 Kateqoriyalar</a>
-      <a href="products.php" class="<?php echo ($activeNav ?? '') === 'products' ? 'active' : ''; ?>">🍣 Menyu</a>
-      <a href="gallery.php" class="<?php echo ($activeNav ?? '') === 'gallery' ? 'active' : ''; ?>">🖼️ Qalereya</a>
       <a href="contacts.php" class="<?php echo ($activeNav ?? '') === 'contacts' ? 'active' : ''; ?>">☎️ Əlaqələr</a>
       <a href="social.php" class="<?php echo ($activeNav ?? '') === 'social' ? 'active' : ''; ?>">🔗 Sosial Şəbəkələr</a>
       <a href="seo.php" class="<?php echo ($activeNav ?? '') === 'seo' ? 'active' : ''; ?>">🔍 SEO</a>

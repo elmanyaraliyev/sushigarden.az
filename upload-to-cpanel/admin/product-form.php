@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-sg_require_owner();
+sg_require_permission('products');
 $pdo = sg_db();
 
 $id = isset($_GET['id']) ? (int)$_GET['id'] : 0;

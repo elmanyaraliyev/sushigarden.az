@@ -450,12 +450,9 @@ header.scrolled .nav{padding:11px 28px;}
 .carousel-arrow:active{transform:translateY(-50%) scale(.92); box-shadow:inset 0 2px 6px rgba(0,0,0,.25);}
 .carousel-arrow.prev{left:18px;}
 .carousel-arrow.next{right:18px;}
-.carousel-dots{position:absolute; left:0; right:0; bottom:18px; display:flex; justify-content:center; gap:.4rem; z-index:6;}
-.carousel-dots button{
-  width:8px; height:8px; border-radius:50%; border:none; padding:0; cursor:pointer;
-  background:rgba(255,255,255,.35); transition:background .2s, width .2s, border-radius .2s;
-}
-.carousel-dots button.active{background:var(--accent); width:24px; border-radius:4px;}
+/* İstək üzərinə tamamilə ləğv edilib — nə mobil, nə PC-də göstərilmir, altında
+   ayrıca boşluq da qalmasın deyə "display:none" (reserved space yaratmır). */
+.carousel-dots{display:none;}
 
 @media (max-width:820px){
   .promo-carousel{padding:16px 0 8px;}
@@ -470,7 +467,6 @@ header.scrolled .nav{padding:11px 28px;}
   /* Oxlar əvəzinə barmaqla sürüşdürmə (swipe) — mobil ekranda daha təbii və
      kifayət qədər yer yoxdur ki, oxlar mətnlə üst-üstə düşmədən sığsın. */
   .carousel-arrow{display:none;}
-  .carousel-dots{position:static; margin:.5rem 0 .55rem; padding:0;}
 }
 /* ---------------------------------------------------------------------
  * About Us paneli

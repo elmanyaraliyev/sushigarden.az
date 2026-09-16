@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-sg_require_owner();
+sg_require_permission('products');
 $pdo = sg_db();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

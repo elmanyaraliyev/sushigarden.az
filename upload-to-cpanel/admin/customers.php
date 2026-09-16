@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-sg_require_owner();
+sg_require_permission('customers');
 $pdo = sg_db();
 
 $customers = $pdo->query("

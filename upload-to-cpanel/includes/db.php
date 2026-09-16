@@ -137,6 +137,12 @@ function sg_migrate(PDO $pdo) {
     if (!in_array('created_at', $adminColNames, true)) {
         $pdo->exec("ALTER TABLE admin_users ADD COLUMN created_at TEXT NOT NULL DEFAULT ''");
     }
+    // "Sifariş meneceri" hesablarına sahibkarın istədiyi əlavə səlahiyyətləri
+    // (məs. menyu düzəlişi) vermək/geri almaq üçün — vergüllə ayrılmış açarlar
+    // (sg_staff_permissions() ilə eyni siyahı olmalıdır).
+    if (!in_array('permissions', $adminColNames, true)) {
+        $pdo->exec("ALTER TABLE admin_users ADD COLUMN permissions TEXT NOT NULL DEFAULT ''");
+    }
 
     // Bloklanmış müştərilər (telefon nömrəsinə görə) — bloklanan nömrə ilə
     // sifariş yerləşdirmək bloklanır (order.php bunu yoxlayır).
