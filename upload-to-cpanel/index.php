@@ -141,8 +141,11 @@ $menuSchema = [
 <link rel="apple-touch-icon" href="<?php echo h(sg_favicon_url()); ?>">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preload" as="image" href="<?php echo h($logoFullCustom ?: 'assets/logo-full.webp'); ?>" fetchpriority="high">
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;0,800;0,900;1,600&family=Playfair+Display:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<?php if (!empty($featured[0]['image'])): ?>
+<link rel="preload" as="image" href="<?php echo h(SG_UPLOADS_URL . '/' . $featured[0]['image']); ?>" fetchpriority="high">
+<?php endif; ?>
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;0,800;0,900;1,600&family=Playfair+Display:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;0,700;0,800;0,900;1,600&family=Playfair+Display:wght@700;800;900&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet"></noscript>
 <link rel="stylesheet" href="css/style.css?v=<?php echo (int)@filemtime(__DIR__ . '/css/style.css'); ?>">
 <script type="application/ld+json"><?php echo json_encode($restaurantSchema, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES); ?></script>
 <?php if ($menuSections): ?>
@@ -220,11 +223,15 @@ $menuSchema = [
           <div class="carousel-shell">
             <div class="carousel-viewport">
               <div class="carousel-track" id="carousel-track">
-                <?php foreach ($featured as $p): ?>
+                <?php foreach ($featured as $fi => $p): ?>
                   <div class="carousel-slide">
                     <div class="slide-media">
                       <?php if (!empty($p['image'])): ?>
-                        <img src="<?php echo h(SG_UPLOADS_URL . '/' . $p['image']); ?>" alt="<?php echo h($p['name']); ?>" loading="lazy" width="1280" height="720">
+                        <?php if ($fi === 0): ?>
+                          <img src="<?php echo h(SG_UPLOADS_URL . '/' . $p['image']); ?>" alt="<?php echo h($p['name']); ?>" fetchpriority="high" width="1280" height="720">
+                        <?php else: ?>
+                          <img src="<?php echo h(SG_UPLOADS_URL . '/' . $p['image']); ?>" alt="<?php echo h($p['name']); ?>" loading="lazy" width="1280" height="720">
+                        <?php endif; ?>
                       <?php else: ?>
                         <span class="ph">🍣</span>
                       <?php endif; ?>
@@ -580,7 +587,7 @@ $menuSchema = [
   window.SG_COMPLETED_SOUND_FILE = <?php echo json_encode(sg_setting('customer_completed_sound', '')); ?>;
 </script>
 <script src="js/site.js?v=<?php echo (int)@filemtime(__DIR__ . '/js/site.js'); ?>" defer></script>
-<script src="js/notify-sounds.js"></script>
+<script src="js/notify-sounds.js" defer></script>
 <script src="js/order-watcher.js?v=<?php echo (int)@filemtime(__DIR__ . '/js/order-watcher.js'); ?>" defer></script>
 </body>
 </html>
