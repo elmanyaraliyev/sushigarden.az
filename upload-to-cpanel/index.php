@@ -403,10 +403,10 @@ $menuSchema = [
               <?php endif; ?>
               <p class="social-label" data-i18n="social_heading">Sosial Şəbəkələr</p>
               <div class="social-row">
-                <?php if ($fbUrl): ?><a href="<?php echo h($fbUrl); ?>" target="_blank" rel="noopener" aria-label="Facebook"><img src="assets/social/facebook.png" alt="Facebook" loading="lazy"></a><?php endif; ?>
-                <?php if ($igUrl): ?><a href="<?php echo h($igUrl); ?>" target="_blank" rel="noopener" aria-label="Instagram"><img src="assets/social/instagram.png" alt="Instagram" loading="lazy"></a><?php endif; ?>
-                <a href="https://wa.me/<?php echo h($phoneWa); ?>" target="_blank" rel="noopener" aria-label="WhatsApp"><img src="assets/social/whatsapp.png" alt="WhatsApp" loading="lazy"></a>
-                <?php if ($ttUrl): ?><a href="<?php echo h($ttUrl); ?>" target="_blank" rel="noopener" aria-label="TikTok"><img src="assets/social/tiktok.png" alt="TikTok" loading="lazy"></a><?php endif; ?>
+                <?php if ($fbUrl): ?><a href="<?php echo h($fbUrl); ?>" target="_blank" rel="noopener" aria-label="Facebook"><img src="assets/social/facebook.svg" alt="Facebook" loading="lazy"></a><?php endif; ?>
+                <?php if ($igUrl): ?><a href="<?php echo h($igUrl); ?>" target="_blank" rel="noopener" aria-label="Instagram"><img src="assets/social/instagram.svg" alt="Instagram" loading="lazy"></a><?php endif; ?>
+                <a href="https://wa.me/<?php echo h($phoneWa); ?>" target="_blank" rel="noopener" aria-label="WhatsApp"><img src="assets/social/whatsapp.svg" alt="WhatsApp" loading="lazy"></a>
+                <?php if ($ttUrl): ?><a href="<?php echo h($ttUrl); ?>" target="_blank" rel="noopener" aria-label="TikTok"><img src="assets/social/tiktok.svg" alt="TikTok" loading="lazy"></a><?php endif; ?>
               </div>
             </div>
             <div class="map-embed">
