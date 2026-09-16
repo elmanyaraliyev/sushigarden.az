@@ -9,7 +9,7 @@ var SG_STRINGS = {
     contact_eyebrow: 'Əlaqə', contact_title: 'Bizi Tapın',
     contact_address: 'Ünvan', contact_maps_link: 'Google Maps-da bax', contact_phone: 'Telefon', contact_email: 'E-poçt',
     hours_closed: 'İstirahət günü',
-    contact_map_open: 'Google Maps-da aç',
+    contact_map_open: 'Google Maps-da aç', social_heading: 'Sosial Şəbəkələr',
     cart_pill_label: 'Sifariş', cart_title: 'Sifarişiniz',
     cart_empty: 'Hələ heç nə seçilməyib. Menyudan "+" düyməsinə basaraq əlavə edin.',
     tip_label: 'Bəxşiş', tip_none: 'Bəxşişsiz', tip_custom: 'Digər məbləğ',
@@ -41,7 +41,7 @@ var SG_STRINGS = {
     contact_eyebrow: 'Контакты', contact_title: 'Найдите нас',
     contact_address: 'Адрес', contact_maps_link: 'Смотреть на Google Maps', contact_phone: 'Телефон', contact_email: 'Эл. почта',
     hours_closed: 'Выходной',
-    contact_map_open: 'Открыть в Google Maps',
+    contact_map_open: 'Открыть в Google Maps', social_heading: 'Социальные сети',
     cart_pill_label: 'Заказ', cart_title: 'Ваш заказ',
     cart_empty: 'Пока ничего не выбрано. Добавьте из меню, нажав «+».',
     tip_label: 'Чаевые', tip_none: 'Без чаевых', tip_custom: 'Другая сумма',
@@ -73,7 +73,7 @@ var SG_STRINGS = {
     contact_eyebrow: 'Contact', contact_title: 'Find Us',
     contact_address: 'Address', contact_maps_link: 'View on Google Maps', contact_phone: 'Phone', contact_email: 'Email',
     hours_closed: 'Day off',
-    contact_map_open: 'Open in Google Maps',
+    contact_map_open: 'Open in Google Maps', social_heading: 'Social Media',
     cart_pill_label: 'Order', cart_title: 'Your Order',
     cart_empty: 'Nothing selected yet. Add items from the menu using "+".',
     tip_label: 'Tip', tip_none: 'No tip', tip_custom: 'Custom amount',
@@ -145,6 +145,16 @@ document.addEventListener('DOMContentLoaded', function () {
     navLinks.querySelectorAll('button, a').forEach(function (b) {
       b.addEventListener('click', function () { navLinks.classList.remove('open'); });
     });
+    // Menyu açıq ikən səhifəni scroll etdikdə və ya kənara toxunduqda
+    // (menyunun özündən və hamburger düyməsindən başqa hər yerə) bağlanır.
+    document.addEventListener('click', function (e) {
+      if (!navLinks.classList.contains('open')) return;
+      if (navLinks.contains(e.target) || navToggle.contains(e.target)) return;
+      navLinks.classList.remove('open');
+    });
+    window.addEventListener('scroll', function () {
+      if (navLinks.classList.contains('open')) navLinks.classList.remove('open');
+    }, { passive: true });
   }
 
   /* ------------------------------------------------------------------

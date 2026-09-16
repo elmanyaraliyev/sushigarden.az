@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-sg_require_login();
+sg_require_owner();
 
 $fields = [
     'about_subtext' => 'Alt başlıq mətni (loqonun yanındakı qısa təsvir)',

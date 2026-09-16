@@ -578,6 +578,31 @@ function sg_valid_az_phone($phone) {
 }
 
 /**
+ * Nömrəni Block List və müqayisələr üçün TƏK formata salır: 9 rəqəmli yerli
+ * hissə (ölkə kodu/aparıcı sıfır olmadan), məs. "050 123 45 67" -> "501234567".
+ * Düzgün formatda deyilsə false qaytarır.
+ */
+function sg_normalize_az_phone($phone) {
+    if (!sg_valid_az_phone($phone)) return false;
+    $digits = preg_replace('/\D+/', '', (string)$phone);
+    if (strpos($digits, '994') === 0 && strlen($digits) === 12) {
+        return substr($digits, 3);
+    }
+    if (strpos($digits, '0') === 0 && strlen($digits) === 10) {
+        return substr($digits, 1);
+    }
+    return $digits;
+}
+
+function sg_is_phone_blocked($phone) {
+    $normalized = sg_normalize_az_phone($phone);
+    if (!$normalized) return false;
+    $stmt = sg_db()->prepare('SELECT COUNT(*) FROM blocked_customers WHERE phone = ?');
+    $stmt->execute([$normalized]);
+    return (bool)$stmt->fetchColumn();
+}
+
+/**
  * Sifarişi yaradır — qiymətləri müştəri tərəfindən göndərilən dəyərlərə
  * yox, bazadakı REAL qiymətlərə əsasən özü hesablayır (manipulyasiyanın
  * qarşısını almaq üçün). $rawItems: [{id, qty}, ...]
@@ -622,6 +647,7 @@ function sg_create_order($data, $rawItems) {
     if ($name === '') $errors[] = 'Adınızı daxil edin.';
     if ($phone === '') $errors[] = 'Telefon nömrənizi daxil edin.';
     elseif (!sg_valid_az_phone($phone)) $errors[] = 'Düzgün mobil nömrə daxil edin (məs. 050 123 45 67).';
+    elseif (sg_is_phone_blocked($phone)) $errors[] = 'Bu nömrə ilə sifariş vermək mümkün deyil.';
     if ($serviceType === 'delivery' && $address === '') $errors[] = 'Çatdırılma ünvanını daxil edin.';
     if ($errors) {
         return ['ok' => false, 'errors' => $errors];
@@ -700,6 +726,18 @@ function sg_update_order_status($id, $status) {
     return $stmt->execute([$status, $id]);
 }
 
+/**
+ * Admin/sifariş meneceri sifarişin hazır olacağı vaxtı əl ilə təyin/dəyişdirir
+ * (məs. müştəri "ən tez zamanda" seçib, admin real vaxtı bildirmək istəyir).
+ */
+function sg_update_order_time($id, $datetime) {
+    $ts = strtotime((string)$datetime);
+    if ($ts === false) return false;
+    $pdo = sg_db();
+    $stmt = $pdo->prepare('UPDATE orders SET requested_time = ? WHERE id = ?');
+    return $stmt->execute([date('Y-m-d H:i:s', $ts), $id]);
+}
+
 function sg_delete_order($id) {
     $pdo = sg_db();
     $stmt = $pdo->prepare('DELETE FROM orders WHERE id = ?');
@@ -710,6 +748,21 @@ function sg_delete_order($id) {
  * Sifariş nömrələməsini sıfırlayır — YALNIZ bütün sifarişlər silindikdən sonra
  * mənalıdır (əks halda növbəti sifariş yenə MAX(id)+1 alacaq).
  */
+/**
+ * BÜTÜN sifariş tarixçəsini (orders, order_items, reviews — foreign key
+ * cascade ilə) həmişəlik silir və nömrələməni sıfırlayır ki, növbəti sifariş
+ * yenidən #1-dən başlasın. GERİ QAYTARILA BİLMƏZ — yalnız admin özü, açıq
+ * təsdiqdən sonra çağırmalıdır.
+ */
+function sg_wipe_all_orders() {
+    $pdo = sg_db();
+    $pdo->exec('DELETE FROM orders');
+    $pdo->exec("DELETE FROM sqlite_sequence WHERE name = 'orders'");
+    $pdo->exec("DELETE FROM sqlite_sequence WHERE name = 'order_items'");
+    $pdo->exec("DELETE FROM sqlite_sequence WHERE name = 'reviews'");
+    return true;
+}
+
 function sg_reset_order_sequence() {
     $pdo = sg_db();
     $count = (int)$pdo->query('SELECT COUNT(*) FROM orders')->fetchColumn();

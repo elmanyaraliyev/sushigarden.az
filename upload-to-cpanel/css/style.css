@@ -412,9 +412,9 @@ header.scrolled .nav{padding:11px 28px;}
 .carousel-viewport{overflow:hidden; position:relative; z-index:1;}
 .carousel-track{display:flex; transition:transform .5s cubic-bezier(.4,0,.2,1);}
 .carousel-slide{position:relative; flex:0 0 100%; aspect-ratio:16/9; max-height:480px;}
-.slide-media{position:absolute; inset:0; z-index:1;}
+.slide-media{position:absolute; inset:0; z-index:1; background:var(--bg-raised);}
 .slide-media img{
-  width:100%; height:100%; object-fit:cover; object-position:center 55%; display:block;
+  width:100%; height:100%; object-fit:contain; display:block;
 }
 .slide-media::after{
   content:''; position:absolute; inset:0;
@@ -461,7 +461,6 @@ header.scrolled .nav{padding:11px 28px;}
   .promo-carousel{padding:16px 0 8px;}
   .carousel-shell{border-radius:18px;}
   .carousel-slide{aspect-ratio:16/9; max-height:200px;}
-  .slide-media img{object-position:center 55%;}
   .slide-info{padding:.8rem 1rem .7rem;}
   .slide-info .badge{font-size:.58rem; padding:.24rem .55rem; margin-bottom:.35rem;}
   .slide-info .name{font-size:.95rem; line-height:1.2; margin-bottom:.4rem;}
@@ -574,21 +573,43 @@ header.scrolled .nav{padding:11px 28px;}
 .hours-list li{display:flex; justify-content:space-between; font-size:.88rem; gap:1rem;}
 .hours-list .day{color:var(--text-soft);}
 .hours-list .time{font-variant-numeric:tabular-nums; font-weight:600;}
-.social-row{display:flex; gap:.7rem; margin-top:1.6rem;}
-.social-row a{
-  width:40px; height:40px; border-radius:50%; color:var(--text);
-  border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
-  text-decoration:none;
-  transition:border-color .15s, color .15s, transform .15s;
+.social-label{
+  font-size:.72rem; font-weight:700; text-transform:uppercase; letter-spacing:.14em;
+  color:var(--gold); margin:1.4rem 0 .6rem;
 }
-.social-row a svg{width:19px; height:19px;}
-.social-row a:hover{border-color:var(--accent); color:var(--accent); transform:translateY(-2px);}
+.social-row{display:flex; gap:.7rem;}
+.social-row a{
+  width:40px; height:40px; border-radius:50%; color:var(--text); background:#fff;
+  border:1px solid var(--line); display:flex; align-items:center; justify-content:center;
+  text-decoration:none; overflow:hidden;
+  transition:border-color .15s, transform .15s, box-shadow .15s;
+}
+.social-row a img{width:24px; height:24px; object-fit:contain;}
+.social-row a:hover{border-color:var(--accent); transform:translateY(-2px); box-shadow:0 6px 14px -6px rgba(0,0,0,.35);}
 
 .map-embed{
   position:relative; min-height:260px; height:100%; border-radius:var(--radius);
   border:1px solid var(--line); overflow:hidden; background:var(--bg);
 }
 .map-embed iframe{width:100%; height:100%; min-height:260px; border:0; display:block; filter:saturate(.85);}
+/* Google-un öz "embed" xəritəsində xüsusi marker qoymaq JS API + ödənişli
+   açar tələb edir — bunun əvəzinə loqomuzu birbaşa nişanın (pin) yerinə,
+   xəritənin mərkəzinin bir az yuxarısına (pinin ucu mərkəzdə olsun deyə)
+   üst-üstə qoyuruq: klikə/sürüşdürməyə mane olmasın deyə pointer-events yoxdur. */
+.map-embed-pin{
+  position:absolute; left:50%; top:50%; transform:translate(-50%, -100%);
+  z-index:1; pointer-events:none; display:flex; flex-direction:column; align-items:center;
+  filter:drop-shadow(0 6px 10px rgba(0,0,0,.45));
+}
+.map-embed-pin img{
+  width:38px; height:38px; border-radius:50%; object-fit:cover;
+  border:2.5px solid #fff; display:block;
+}
+.map-embed-pin::after{
+  content:''; width:0; height:0; margin-top:-4px;
+  border-left:7px solid transparent; border-right:7px solid transparent;
+  border-top:11px solid #fff;
+}
 .map-embed-link{
   position:absolute; left:.7rem; bottom:.7rem; z-index:1;
   display:inline-flex; align-items:center; gap:.4rem;

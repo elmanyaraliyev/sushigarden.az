@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-sg_require_login();
+sg_require_owner();
 
 function sg_diag_row($label, $ok, $detail = '') {
     $icon = $ok === null ? '⚪' : ($ok ? '✅' : '❌');

@@ -21,8 +21,9 @@ $sg_pendingOrders = (int)sg_db()->query("SELECT COUNT(*) FROM orders WHERE statu
       <span>Sushi Garden</span>
     </div>
     <nav>
-      <a href="dashboard.php" class="<?php echo ($activeNav ?? '') === 'dashboard' ? 'active' : ''; ?>">📊 İdarə paneli</a>
       <a href="orders.php" class="<?php echo ($activeNav ?? '') === 'orders' ? 'active' : ''; ?>">🧾 Sifarişlər<?php echo $sg_pendingOrders ? ' <span class="nav-badge">' . $sg_pendingOrders . '</span>' : ''; ?></a>
+      <?php if (sg_is_owner_admin()): ?>
+      <a href="dashboard.php" class="<?php echo ($activeNav ?? '') === 'dashboard' ? 'active' : ''; ?>">📊 İdarə paneli</a>
       <a href="customers.php" class="<?php echo in_array($activeNav ?? '', ['customers', 'customer-view'], true) ? 'active' : ''; ?>">👥 İstifadəçilər</a>
       <a href="reviews.php" class="<?php echo ($activeNav ?? '') === 'reviews' ? 'active' : ''; ?>">⭐ Rəylər</a>
       <a href="restaurant.php" class="<?php echo ($activeNav ?? '') === 'restaurant' ? 'active' : ''; ?>">🏠 Restoran</a>
@@ -35,7 +36,10 @@ $sg_pendingOrders = (int)sg_db()->query("SELECT COUNT(*) FROM orders WHERE statu
       <a href="social.php" class="<?php echo ($activeNav ?? '') === 'social' ? 'active' : ''; ?>">🔗 Sosial Şəbəkələr</a>
       <a href="seo.php" class="<?php echo ($activeNav ?? '') === 'seo' ? 'active' : ''; ?>">🔍 SEO</a>
       <a href="notifications.php" class="<?php echo ($activeNav ?? '') === 'notifications' ? 'active' : ''; ?>">🔔 Bildirişlər</a>
+      <a href="block-list.php" class="<?php echo ($activeNav ?? '') === 'block-list' ? 'active' : ''; ?>">🚫 Bloklananlar</a>
+      <a href="users.php" class="<?php echo ($activeNav ?? '') === 'users' ? 'active' : ''; ?>">🛡️ İdarəçilər</a>
       <a href="settings.php" class="<?php echo ($activeNav ?? '') === 'settings' ? 'active' : ''; ?>">⚙️ Parametrlər</a>
+      <?php endif; ?>
     </nav>
     <div class="view-site">
       <a href="../index.php" target="_blank" rel="noopener">↗ Saytı görüntülə</a>

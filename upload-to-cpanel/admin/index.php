@@ -2,7 +2,7 @@
 require_once __DIR__ . '/includes/auth.php';
 
 if (sg_current_admin()) {
-    header('Location: dashboard.php');
+    header('Location: ' . (sg_is_owner_admin() ? 'dashboard.php' : 'orders.php'));
     exit;
 }
 
@@ -11,7 +11,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!sg_csrf_check($_POST['csrf'] ?? '')) {
         $error = 'Səhifə köhnəlib, yenidən cəhd edin.';
     } elseif (sg_admin_login($_POST['username'] ?? '', $_POST['password'] ?? '')) {
-        header('Location: dashboard.php');
+        header('Location: ' . (sg_is_owner_admin() ? 'dashboard.php' : 'orders.php'));
         exit;
     } else {
         $error = 'İstifadəçi adı və ya şifrə yanlışdır.';

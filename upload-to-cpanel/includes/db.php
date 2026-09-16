@@ -127,6 +127,28 @@ function sg_migrate(PDO $pdo) {
         );
     ");
 
+    // Sifariş qəbulu üçün məhdud səlahiyyətli ("sifariş meneceri") hesablar —
+    // yalnız sahibkarın (admin rolu) idarə edə bildiyi ayrıca istifadəçilər.
+    $adminCols = $pdo->query("PRAGMA table_info(admin_users)")->fetchAll(PDO::FETCH_ASSOC);
+    $adminColNames = array_column($adminCols, 'name');
+    if (!in_array('role', $adminColNames, true)) {
+        $pdo->exec("ALTER TABLE admin_users ADD COLUMN role TEXT NOT NULL DEFAULT 'admin'");
+    }
+    if (!in_array('created_at', $adminColNames, true)) {
+        $pdo->exec("ALTER TABLE admin_users ADD COLUMN created_at TEXT NOT NULL DEFAULT ''");
+    }
+
+    // Bloklanmış müştərilər (telefon nömrəsinə görə) — bloklanan nömrə ilə
+    // sifariş yerləşdirmək bloklanır (order.php bunu yoxlayır).
+    $pdo->exec("
+        CREATE TABLE IF NOT EXISTS blocked_customers (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            phone TEXT NOT NULL UNIQUE,
+            reason TEXT NOT NULL DEFAULT '',
+            created_at TEXT NOT NULL DEFAULT (datetime('now'))
+        );
+    ");
+
     // site_settings-i mövcud SG_* sabitlərindən defolt dəyərlərlə bir dəfəlik doldururuq
     // (yalnız hələ heç bir dəyər yazılmayıbsa) ki, admin panel bu sahələri idarə edə bilsin.
     $seedCheck = $pdo->query("SELECT COUNT(*) FROM site_settings WHERE k = 'restaurant_name'")->fetchColumn();

@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-sg_require_login();
+sg_require_owner();
 
 $pdo = sg_db();
 $totalProducts = (int)$pdo->query('SELECT COUNT(*) FROM products')->fetchColumn();

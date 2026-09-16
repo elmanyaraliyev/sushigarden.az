@@ -26,6 +26,16 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 
+    if ($action === 'update_time') {
+        if (sg_update_order_time($id, $_POST['ready_time'] ?? '')) {
+            $_SESSION['flash_ok'] = 'Hazır olma vaxtı yeniləndi.';
+        } else {
+            $_SESSION['flash_err'] = 'Düzgün tarix/saat daxil edin.';
+        }
+        header('Location: order-view.php?id=' . $id);
+        exit;
+    }
+
     if ($action === 'delete') {
         sg_delete_order($id);
         $_SESSION['flash_ok'] = 'Sifariş silindi.';
@@ -47,6 +57,7 @@ require __DIR__ . '/includes/header.php';
       <li><span class="k">Tarix</span><span class="v"><?php echo h(date('d.m.Y', strtotime($order['created_at']))); ?></span></li>
       <li><span class="k">Saat</span><span class="v"><?php echo h(date('H:i', strtotime($order['created_at']))); ?></span></li>
       <li><span class="k">Status</span><span class="v"><span class="status-pill status-<?php echo h($order['status']); ?>"><?php echo h(sg_order_status_label($order['status'])); ?></span></span></li>
+      <li><span class="k">Hazır olma vaxtı</span><span class="v"><?php echo !empty($order['requested_time']) ? h(date('d.m.Y H:i', strtotime($order['requested_time']))) : '—'; ?></span></li>
     </ul>
     <div class="panel-head" style="margin-top:1.4rem;"><h2>Müştəri</h2></div>
     <ul class="detail-list">
@@ -94,6 +105,12 @@ require __DIR__ . '/includes/header.php';
       <?php endforeach; ?>
     </select>
     <button type="submit" class="btn btn-primary">Statusu dəyiş</button>
+  </form>
+  <form method="post" style="display:flex; gap:.8rem; align-items:center; flex-wrap:wrap;">
+    <input type="hidden" name="action" value="update_time">
+    <input type="hidden" name="csrf" value="<?php echo h($csrf); ?>">
+    <input type="datetime-local" name="ready_time" value="<?php echo !empty($order['requested_time']) ? h(date('Y-m-d\TH:i', strtotime($order['requested_time']))) : ''; ?>">
+    <button type="submit" class="btn btn-ghost">Hazır olma vaxtını təyin et</button>
   </form>
   <form method="post" onsubmit="return confirm('Bu sifarişi silmək istədiyinizə əminsiniz?');">
     <input type="hidden" name="action" value="delete">

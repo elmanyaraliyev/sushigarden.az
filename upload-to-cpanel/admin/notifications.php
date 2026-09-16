@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-sg_require_login();
+sg_require_owner();
 
 $errors = [];
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {

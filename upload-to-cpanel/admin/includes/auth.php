@@ -6,12 +6,32 @@ if (session_status() !== PHP_SESSION_ACTIVE) {
 }
 
 function sg_current_admin() {
-    return isset($_SESSION['admin_id']) ? ['id' => $_SESSION['admin_id'], 'username' => $_SESSION['admin_username']] : null;
+    return isset($_SESSION['admin_id'])
+        ? ['id' => $_SESSION['admin_id'], 'username' => $_SESSION['admin_username'], 'role' => $_SESSION['admin_role'] ?? 'admin']
+        : null;
+}
+
+function sg_is_owner_admin() {
+    $a = sg_current_admin();
+    return $a && $a['role'] === 'admin';
 }
 
 function sg_require_login() {
     if (!sg_current_admin()) {
         header('Location: index.php');
+        exit;
+    }
+}
+
+/**
+ * "Sifariş meneceri" (role=staff) hesabları YALNIZ sifariş bölmələrinə daxil
+ * ola bilər — bu funksiya digər bütün admin səhifələrinin başında çağırılır
+ * və staff hesabı üçün avtomatik orders.php-ə yönləndirir.
+ */
+function sg_require_owner() {
+    sg_require_login();
+    if (!sg_is_owner_admin()) {
+        header('Location: orders.php');
         exit;
     }
 }
@@ -25,6 +45,7 @@ function sg_admin_login($username, $password) {
         session_regenerate_id(true);
         $_SESSION['admin_id'] = $user['id'];
         $_SESSION['admin_username'] = $user['username'];
+        $_SESSION['admin_role'] = $user['role'] ?? 'admin';
         return true;
     }
     return false;

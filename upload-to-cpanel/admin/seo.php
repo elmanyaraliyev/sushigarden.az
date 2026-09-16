@@ -1,6 +1,6 @@
 <?php
 require_once __DIR__ . '/includes/auth.php';
-sg_require_login();
+sg_require_owner();
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     if (!sg_csrf_check($_POST['csrf'] ?? '')) {

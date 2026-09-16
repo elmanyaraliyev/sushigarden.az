@@ -24,6 +24,7 @@ function sg_customer_register($name, $phone, $email, $password) {
 
     if ($name === '') return ['ok' => false, 'error' => 'Adınızı daxil edin.'];
     if (!sg_valid_az_phone($phone)) return ['ok' => false, 'error' => 'Düzgün mobil nömrə daxil edin (məs. 050 123 45 67).'];
+    if (sg_is_phone_blocked($phone)) return ['ok' => false, 'error' => 'Bu nömrə ilə qeydiyyatdan keçmək mümkün deyil.'];
     if (strlen($password) < 6) return ['ok' => false, 'error' => 'Şifrə ən azı 6 simvol olmalıdır.'];
 
     $pdo = sg_db();

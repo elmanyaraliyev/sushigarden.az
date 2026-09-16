@@ -17,6 +17,18 @@ $phoneWa = sg_setting('phone_wa', defined('SG_PHONE_WA') ? SG_PHONE_WA : '');
 $address = sg_setting('address', '');
 $contactEmail = sg_setting('contact_email', 'info@sushigarden.az');
 $mapsUrl = sg_setting('maps_url', defined('SG_MAPS_URL') ? SG_MAPS_URL : '#');
+// Admin-in verdiyi Google Maps linkində dəqiq koordinat varsa (adətən "@enlik,uzunluq"
+// formatında), xəritə sorğusunu ünvan mətni əvəzinə həmin koordinatla qururuq —
+// mətn-əsaslı axtarışdan qat-qat dəqiqdir, tam bizim məkanı göstərir.
+$mapQuery = null;
+if ($mapsUrl && preg_match('/@(-?\d+\.\d+),(-?\d+\.\d+)/', $mapsUrl, $m)) {
+    $mapQuery = $m[1] . ',' . $m[2];
+} elseif ($mapsUrl && preg_match('/[?&]q=(-?\d+\.\d+),(-?\d+\.\d+)/', $mapsUrl, $m)) {
+    $mapQuery = $m[1] . ',' . $m[2];
+}
+if (!$mapQuery) {
+    $mapQuery = $address ?: ($restaurantName . ', Bakı, Azərbaycan');
+}
 $igUrl = sg_setting('social_instagram', '');
 $fbUrl = sg_setting('social_facebook', '');
 $ttUrl = sg_setting('social_tiktok', '');
@@ -389,17 +401,25 @@ $menuSchema = [
                 <?php endforeach; ?>
               </ul>
               <?php endif; ?>
+              <p class="social-label" data-i18n="social_heading">Sosial Şəbəkələr</p>
               <div class="social-row">
-                <?php if ($igUrl): ?><a href="<?php echo h($igUrl); ?>" target="_blank" rel="noopener" aria-label="Instagram"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4.2"/><circle cx="17.2" cy="6.8" r="1.1" fill="currentColor" stroke="none"/></svg></a><?php endif; ?>
-                <?php if ($fbUrl): ?><a href="<?php echo h($fbUrl); ?>" target="_blank" rel="noopener" aria-label="Facebook"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M14.5 8.5H16V5.6c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4v2.4H7.3v3.3h2.5V21h3.4v-5.8h2.4l.4-3.3h-2.8V9.9c0-.9.3-1.4 1.3-1.4z"/></svg></a><?php endif; ?>
-                <?php if ($ttUrl): ?><a href="<?php echo h($ttUrl); ?>" target="_blank" rel="noopener" aria-label="TikTok"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M16.5 3c.4 2.1 1.7 3.5 3.8 3.7v2.7c-1.3.1-2.5-.3-3.8-1.1v6.3c0 3.2-2.6 5.4-5.5 5.4-3 0-5.5-2.3-5.5-5.4s2.6-5.4 5.5-5.4c.3 0 .6 0 1 .1v2.8a2.7 2.7 0 0 0-1-.2c-1.5 0-2.7 1.2-2.7 2.7s1.2 2.7 2.7 2.7c1.6 0 2.8-1.2 2.8-2.8V3h2.7z"/></svg></a><?php endif; ?>
-                <a href="https://wa.me/<?php echo h($phoneWa); ?>" target="_blank" rel="noopener" aria-label="WhatsApp"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 3a9 9 0 0 0-7.8 13.4L3 21l4.7-1.2A9 9 0 1 0 12 3zm0 16.3c-1.4 0-2.8-.4-4-1.1l-.3-.2-2.7.7.7-2.6-.2-.3A7.3 7.3 0 1 1 12 19.3zm4-5.5c-.2-.1-1.3-.6-1.5-.7-.2-.1-.4-.1-.5.1-.2.2-.6.7-.7.9-.1.2-.3.2-.5.1-.2-.1-1-.4-2-1.2-.7-.6-1.2-1.4-1.4-1.6-.1-.2 0-.4.1-.5l.4-.4.2-.4c0-.1 0-.3 0-.4L9 8.6c-.1-.1-.5-1.2-.7-1.6-.2-.4-.4-.4-.5-.4h-.4c-.2 0-.4.1-.6.3-.2.2-.8.8-.8 1.9s.8 2.2.9 2.4c.1.2 1.6 2.5 4 3.5.5.2 1 .4 1.3.5.5.2 1 .1 1.4-.1.4-.2 1.3-.5 1.5-1 .2-.5.2-.9.1-1z"/></svg></a>
+                <?php if ($fbUrl): ?><a href="<?php echo h($fbUrl); ?>" target="_blank" rel="noopener" aria-label="Facebook"><img src="assets/social/facebook.png" alt="Facebook" loading="lazy"></a><?php endif; ?>
+                <?php if ($igUrl): ?><a href="<?php echo h($igUrl); ?>" target="_blank" rel="noopener" aria-label="Instagram"><img src="assets/social/instagram.png" alt="Instagram" loading="lazy"></a><?php endif; ?>
+                <a href="https://wa.me/<?php echo h($phoneWa); ?>" target="_blank" rel="noopener" aria-label="WhatsApp"><img src="assets/social/whatsapp.png" alt="WhatsApp" loading="lazy"></a>
+                <?php if ($ttUrl): ?><a href="<?php echo h($ttUrl); ?>" target="_blank" rel="noopener" aria-label="TikTok"><img src="assets/social/tiktok.png" alt="TikTok" loading="lazy"></a><?php endif; ?>
               </div>
             </div>
             <div class="map-embed">
               <iframe
-                src="https://maps.google.com/maps?q=<?php echo urlencode($address ?: ($restaurantName . ', Bakı, Azərbaycan')); ?>&z=15&output=embed"
+                src="https://maps.google.com/maps?q=<?php echo urlencode($mapQuery); ?>&z=16&output=embed"
                 loading="lazy" referrerpolicy="no-referrer-when-downgrade" allowfullscreen title="<?php echo h($restaurantName); ?> — xəritə"></iframe>
+              <div class="map-embed-pin" aria-hidden="true">
+                <?php if ($logoIconCustom): ?>
+                  <img src="<?php echo h($logoIconCustom); ?>" alt="">
+                <?php else: ?>
+                  <img src="assets/logo-icon.jpg" alt="">
+                <?php endif; ?>
+              </div>
               <a class="map-embed-link" href="<?php echo h($mapsUrl); ?>" target="_blank" rel="noopener">
                 📍 <span data-i18n="contact_map_open">Google Maps-da aç</span>
               </a>

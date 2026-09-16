@@ -43,6 +43,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 
+    if ($action === 'wipe_all') {
+        // Geri qaytarılmaz əməliyyat — YALNIZ sahibkar (admin rolu) çağıra bilər,
+        // sifariş meneceri (staff) heç vaxt bütün tarixçəni silə bilməz.
+        if (!sg_is_owner_admin()) {
+            $_SESSION['flash_err'] = 'Bu əməliyyat üçün icazəniz yoxdur.';
+        } elseif (trim($_POST['confirm_text'] ?? '') !== 'SİL') {
+            $_SESSION['flash_err'] = 'Təsdiq mətni yanlışdır — heç nə silinmədi.';
+        } else {
+            sg_wipe_all_orders();
+            $_SESSION['flash_ok'] = 'Bütün sifariş tarixçəsi silindi. Növbəti sifariş #1 olacaq.';
+        }
+    }
+
     header('Location: orders.php' . (isset($_GET['status']) ? '?status=' . urlencode($_GET['status']) : ''));
     exit;
 }
@@ -145,6 +158,28 @@ require __DIR__ . '/includes/header.php';
     </form>
   <?php endif; ?>
 </div>
+
+<?php if (sg_is_owner_admin() && $total > 0): ?>
+<div class="panel" style="max-width:520px;">
+  <details style="border:1px solid var(--danger); border-radius:8px; padding:.8rem 1rem;">
+    <summary style="cursor:pointer; color:var(--danger); font-weight:700;">⚠ Bütün sifariş tarixçəsini sil (geri qaytarıla bilməz)</summary>
+    <p style="color:var(--text-soft); font-size:.86rem; margin:.7rem 0;">
+      Bu, mövcud <?php echo $total; ?> sifarişin HAMISINI (və onlara bağlı rəyləri) həmişəlik siləcək və
+      nömrələməni sıfırlayacaq ki, növbəti sifariş #1 olsun. Yalnız saytı ilk dəfə istifadəyə verməzdən əvvəl,
+      test sifarişlərini təmizləmək üçün istifadə edin.
+    </p>
+    <form method="post" onsubmit="return confirm('SON XƏBƏRDARLIQ: ' + <?php echo json_encode((string)$total); ?> + ' sifariş həmişəlik silinəcək. Davam edilsin?');">
+      <input type="hidden" name="action" value="wipe_all">
+      <input type="hidden" name="csrf" value="<?php echo h($csrf); ?>">
+      <div class="field" style="max-width:260px;">
+        <label>Təsdiq üçün "SİL" yazın</label>
+        <input type="text" name="confirm_text" autocomplete="off" required>
+      </div>
+      <button type="submit" class="btn btn-danger btn-sm">Bütün sifarişləri həmişəlik sil</button>
+    </form>
+  </details>
+</div>
+<?php endif; ?>
 
 <script>
   var checkAll = document.getElementById('check-all');
